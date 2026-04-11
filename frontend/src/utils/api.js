@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // In development: Vite proxy forwards /api → http://localhost:8000
 // In production:  set VITE_API_URL to your Render.com backend URL
-const BASE_URL = 'http://localhost:8000'
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
 
 const client = axios.create({
   baseURL: BASE_URL,
