@@ -29,6 +29,30 @@ DOCTORS = {
         {"name": "Dr. Anil Desai",    "fee": 800,  "slots": ["11:00 AM", "2:00 PM", "5:00 PM"]},
         {"name": "Dr. Meera Joshi",   "fee": 700,  "slots": ["10:00 AM", "1:00 PM", "4:00 PM"]},
     ],
+    "Orthopedic Ward": [
+        {"name": "Dr. Suresh Patil",  "fee": 600,  "slots": ["10:00 AM", "12:00 PM", "4:00 PM"]},
+        {"name": "Dr. Kavita Singh",  "fee": 550,  "slots": ["9:00 AM",  "11:00 AM", "3:00 PM"]},
+    ],
+    "Cardiology Ward": [
+        {"name": "Dr. Ramesh Gupta",  "fee": 900,  "slots": ["10:00 AM", "1:00 PM", "4:00 PM"]},
+        {"name": "Dr. Neha Kapoor",   "fee": 850,  "slots": ["11:00 AM", "2:00 PM", "5:00 PM"]},
+    ],
+    "Pediatric Ward": [
+        {"name": "Dr. Anjali Mehta",  "fee": 400,  "slots": ["9:00 AM",  "11:00 AM", "3:00 PM"]},
+        {"name": "Dr. Vikram Shah",   "fee": 450,  "slots": ["10:00 AM", "12:00 PM", "4:00 PM"]},
+    ],
+    "Gynecology Ward": [
+        {"name": "Dr. Sunita Desai",  "fee": 600,  "slots": ["10:00 AM", "12:00 PM", "3:00 PM"]},
+        {"name": "Dr. Pooja Rao",     "fee": 550,  "slots": ["9:00 AM",  "11:00 AM", "4:00 PM"]},
+    ],
+    "Eye/ENT Ward": [
+        {"name": "Dr. Arun Joshi",    "fee": 500,  "slots": ["10:00 AM", "1:00 PM",  "4:00 PM"]},
+        {"name": "Dr. Smita Kulkarni","fee": 450,  "slots": ["9:00 AM",  "11:00 AM", "3:00 PM"]},
+    ],
+    "Dental Ward": [
+        {"name": "Dr. Rohit Verma",   "fee": 350,  "slots": ["10:00 AM", "12:00 PM", "4:00 PM"]},
+        {"name": "Dr. Priya Nair",    "fee": 300,  "slots": ["9:00 AM",  "11:00 AM", "3:00 PM"]},
+    ],
 }
 
 
@@ -96,21 +120,34 @@ def router_node(state: PatientState) -> dict:
     response = llm.invoke([
         SystemMessage(content="""You are a hospital triage assistant.
 Classify the patient message into ONE of these wards:
-- General Ward: fever, cough, cold, body ache, checkup, ulcer, periods, menstrual, stomach pain, sardi, khasi, bukhar, etc.
-- Emergency Ward: chest pain, difficulty breathing, severe bleeding, unconscious, accidents, heart attack, emergency, etc.
-- Mental Health Ward: anxiety, depression, stress, mental health, suicidal thoughts, tanav, udasi, etc.
+- General Ward: fever, cough, cold, body ache, general checkup, ulcer, stomach pain, sardi, khasi, bukhar
+- Emergency Ward: chest pain, difficulty breathing, severe bleeding, unconscious, accidents, heart attack
+- Mental Health Ward: anxiety, depression, stress, mental health, suicidal thoughts, tanav, udasi
+- Orthopedic Ward: bone pain, joint pain, fracture, back pain, knee pain, shoulder pain, spine
+- Cardiology Ward: heart problem, palpitations, high BP, low BP, cholesterol, cardiac
+- Pediatric Ward: child health, baby, infant, kids fever, child vaccination, newborn
+- Gynecology Ward: periods, menstrual, pregnancy, women health, PCOD, PCOS, delivery
+- Eye/ENT Ward: eye pain, vision, ear pain, hearing loss, nose bleed, throat pain, sinusitis
+- Dental Ward: tooth pain, cavity, gum problem, teeth, dental, mouth ulcer
 
 The patient may communicate in English, Hindi, or Marathi. Understand their intent and classify accordingly.
 
 Reply with ONLY one of these exact strings:
 General Ward
 Emergency Ward
-Mental Health Ward"""),
+Mental Health Ward
+Orthopedic Ward
+Cardiology Ward
+Pediatric Ward
+Gynecology Ward
+Eye/ENT Ward
+Dental Ward"""),
         HumanMessage(content=msg or "general checkup"),
     ])
 
     ward = response.content.strip()
-    if ward not in ["General Ward", "Emergency Ward", "Mental Health Ward"]:
+    valid_wards = list(DOCTORS.keys())
+    if ward not in valid_wards:
         ward = "General Ward"
 
     return {"assigned_ward": ward, "last_reply": ""}
@@ -134,7 +171,7 @@ def ward_node(state: PatientState) -> dict:
 {"Be calm but efficient - this may be urgent." if ward == "Emergency Ward" else ""}
 {"Be gentle and empathetic." if ward == "Mental Health Ward" else ""}
 
-CRITICAL MULTILINGUAL RULE: Detect the language of the user's message (English, Hindi, or Marathi) and reply ENTIRELY in that same language.
+CRITICAL LANGUAGE RULE: Always respond in ENGLISH by default, regardless of what language the user types in. Only switch to Hindi or Marathi if the user explicitly asks you to respond in that language.
 
 Follow these steps IN ORDER. Move to next step only when current step is complete.
 
@@ -143,13 +180,20 @@ STEP 1 - Collect basic info ONE AT A TIME (skip if already collected):
 2. Patient age
 3. Health concern/symptoms
 
-STEP 2 - Once name+age+concern collected, recommend a doctor:
+STEP 2 - Once all 3 collected, recommend a doctor:
 Available doctors in {ward}:
 {json.dumps(DOCTORS.get(ward, []), indent=2)}
 - Recommend ONE doctor by name
-- Show their consultation fee in ₹
-- Show their available slots
-- Ask patient to choose a slot
+- Show details in this EXACT table format:
+
+| Detail | Info |
+|--------|------|
+| 👨‍⚕️ Doctor | Dr. Name Here |
+| 🏥 Ward | {ward} |
+| 💰 Fee | ₹amount |
+| 🕐 Available Slots | slot1, slot2, slot3 |
+
+- Then ask: "Which slot would you like to book?"
 
 STEP 3 - Once slot is chosen, ask for email:
 Ask exactly: "Please provide your email address to receive the appointment confirmation."
@@ -169,7 +213,7 @@ IMPORTANT RULES:
 - Ask ONE question at a time only
 - Do NOT skip asking for email — it is required
 - Be warm and professional
-- Reply in the EXACT same language the user just used
+- Always reply in ENGLISH unless user explicitly requests Hindi or Marathi
 """
 
     lc_msgs = [SystemMessage(content=system)]
@@ -253,7 +297,6 @@ def check_complete(state: PatientState) -> dict:
 # ── Node: Webhook + Email ─────────────────────────────────────────────────────
 
 async def webhook_node(state: PatientState) -> dict:
-    # Send confirmation email
     if state.get("patient_email") and state.get("data_complete"):
         try:
             from services.email_service import send_appointment_email
@@ -268,7 +311,6 @@ async def webhook_node(state: PatientState) -> dict:
         except Exception as e:
             print(f"[Email Error] {e}")
 
-    # Webhook
     url = os.getenv("WEBHOOK_URL", "")
     if not url or "dummy" in url or not state.get("data_complete"):
         return {"last_reply": state.get("last_reply", "")}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import LocationPopup from '../components/LocationPopup'
 
 const LANGUAGES = [
   { greet: 'Namaste!',  sub: 'AI Hospital Receptionist' },
@@ -7,48 +8,12 @@ const LANGUAGES = [
 ]
 
 const DOCTORS = [
-  {
-    doc: 'Dr. Rajesh Sharma',
-    spec: 'General Physician',
-    ward: 'General Ward',
-    fee: 500,
-    slots: ['10:00 AM', '11:00 AM', '3:00 PM'],
-  },
-  {
-    doc: 'Dr. Priya Patel',
-    spec: 'General Physician',
-    ward: 'General Ward',
-    fee: 400,
-    slots: ['9:00 AM', '12:00 PM', '4:00 PM'],
-  },
-  {
-    doc: 'Dr. Arjun Mehta',
-    spec: 'Emergency Specialist',
-    ward: 'Emergency Ward',
-    fee: 1000,
-    slots: ['Available 24/7'],
-  },
-  {
-    doc: 'Dr. Sunita Rao',
-    spec: 'Emergency Specialist',
-    ward: 'Emergency Ward',
-    fee: 1000,
-    slots: ['Available 24/7'],
-  },
-  {
-    doc: 'Dr. Anil Desai',
-    spec: 'Psychiatrist',
-    ward: 'Mental Health Ward',
-    fee: 800,
-    slots: ['11:00 AM', '2:00 PM', '5:00 PM'],
-  },
-  {
-    doc: 'Dr. Meera Joshi',
-    spec: 'Psychologist',
-    ward: 'Mental Health Ward',
-    fee: 700,
-    slots: ['10:00 AM', '1:00 PM', '4:00 PM'],
-  },
+  { doc: 'Dr. Rajesh Sharma', spec: 'General Physician',    ward: 'General Ward',       fee: 500,  slots: ['10:00 AM', '11:00 AM', '3:00 PM'] },
+  { doc: 'Dr. Priya Patel',   spec: 'General Physician',    ward: 'General Ward',       fee: 400,  slots: ['9:00 AM', '12:00 PM', '4:00 PM'] },
+  { doc: 'Dr. Arjun Mehta',   spec: 'Emergency Specialist', ward: 'Emergency Ward',     fee: 1000, slots: ['Available 24/7'] },
+  { doc: 'Dr. Sunita Rao',    spec: 'Emergency Specialist', ward: 'Emergency Ward',     fee: 1000, slots: ['Available 24/7'] },
+  { doc: 'Dr. Anil Desai',    spec: 'Psychiatrist',         ward: 'Mental Health Ward', fee: 800,  slots: ['11:00 AM', '2:00 PM', '5:00 PM'] },
+  { doc: 'Dr. Meera Joshi',   spec: 'Psychologist',         ward: 'Mental Health Ward', fee: 700,  slots: ['10:00 AM', '1:00 PM', '4:00 PM'] },
 ]
 
 const WARD_COLORS = {
@@ -61,6 +26,20 @@ export default function WelcomeScreen({ onStart }) {
   const [langIdx, setLangIdx]           = useState(0)
   const [visible, setVisible]           = useState(true)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+
+  // ── ONLY NEW ADDITIONS ────────────────────────────────────────────────────
+  const [showLocation, setShowLocation] = useState(false)
+
+  function handleLocationComplete(data) {
+    setShowLocation(false)
+    onStart(data)
+  }
+
+  function handleSkipLocation() {
+    setShowLocation(false)
+    onStart(null)
+  }
+  // ─────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -123,37 +102,24 @@ export default function WelcomeScreen({ onStart }) {
             <p className="text-xs text-gray-400">Scroll to see all available doctors and their slots</p>
           </div>
 
-          {/* ── Doctor List (Scrollable) ── */}
+          {/* Doctor List */}
           <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-4">
             {DOCTORS.map(d => {
               const wc = WARD_COLORS[d.ward] ?? WARD_COLORS['General Ward']
               return (
-                <div
-                  key={d.doc}
-                  className="p-4 border border-gray-100 rounded-2xl bg-white shadow-sm hover:shadow-md hover:border-primary-100 transition-all"
-                >
-                  {/* Doctor name + ward badge */}
+                <div key={d.doc} className="p-4 border border-gray-100 rounded-2xl bg-white shadow-sm hover:shadow-md hover:border-primary-100 transition-all">
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <h3 className="font-semibold text-gray-800 text-sm">{d.doc}</h3>
                     <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border flex-shrink-0 ${wc.bg} ${wc.text} ${wc.border}`}>
                       {d.ward.replace(' Ward', '')}
                     </span>
                   </div>
-
-                  {/* Specialization */}
                   <p className="text-xs text-gray-400 mb-1">{d.spec}</p>
-
-                  {/* Fee */}
                   <p className="text-xs font-semibold text-primary-600 mb-3">₹{d.fee} consultation</p>
-
-                  {/* Slots */}
                   {d.slots.length > 0 ? (
                     <div className="flex flex-wrap gap-1.5">
                       {d.slots.map(s => (
-                        <span
-                          key={s}
-                          className="px-2.5 py-1 bg-primary-50 border border-primary-100 text-xs font-semibold text-primary-600 rounded-lg"
-                        >
+                        <span key={s} className="px-2.5 py-1 bg-primary-50 border border-primary-100 text-xs font-semibold text-primary-600 rounded-lg">
                           🕐 {s}
                         </span>
                       ))}
@@ -179,7 +145,7 @@ export default function WelcomeScreen({ onStart }) {
       <div className="absolute top-[-80px] right-[-80px] w-80 h-80 rounded-full bg-primary-100 opacity-40 blur-3xl" />
       <div className="absolute bottom-[-60px] left-[-60px] w-64 h-64 rounded-full bg-primary-200 opacity-30 blur-2xl" />
 
-      {/* ── Main Content Card (YOUR ORIGINAL) ── */}
+      {/* ── Main Content Card ── */}
       <div className="relative bg-white/70 backdrop-blur-xl border border-white shadow-2xl shadow-primary-200/40 rounded-[2.5rem] p-8 md:p-12 max-w-lg w-full mx-4 flex flex-col items-center transition-all duration-500 hover:shadow-primary-300/50">
 
         {/* Logo */}
@@ -208,9 +174,9 @@ export default function WelcomeScreen({ onStart }) {
           Just tell me how you're feeling — in your own words.
         </p>
 
-        {/* CTA */}
+        {/* ── CTA — ONLY CHANGE: onClick now opens location popup ── */}
         <button
-          onClick={onStart}
+          onClick={() => setShowLocation(true)}
           className="group relative px-10 py-4 bg-primary-500 hover:bg-primary-600 text-white font-display font-semibold text-lg rounded-2xl shadow-lg shadow-primary-200 transition-all duration-200 hover:scale-105 active:scale-95 animate-slide-up"
         >
           <span className="flex items-center gap-3">
@@ -235,7 +201,7 @@ export default function WelcomeScreen({ onStart }) {
         </div>
       </div>
 
-          {/* Stats - Top Right */}
+      {/* Stats - Top Right */}
       <div className="absolute top-6 right-6 flex gap-2 animate-fade-in z-30">
         {[
           { value: '24/7', label: 'Available' },
@@ -253,6 +219,14 @@ export default function WelcomeScreen({ onStart }) {
       <p className="absolute bottom-6 text-xs text-black-300 font-medium tracking-widest uppercase">
         Powered by SDD
       </p>
+
+      {/* ── ONLY NEW ADDITION: Location Popup ── */}
+      {showLocation && (
+        <LocationPopup
+          onComplete={handleLocationComplete}
+          onSkip={handleSkipLocation}
+        />
+      )}
     </div>
   )
 }

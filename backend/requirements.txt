@@ -9,4 +9,4 @@ langsmith
 pydantic
 supabase
 httpx
-websockets
+websockets`

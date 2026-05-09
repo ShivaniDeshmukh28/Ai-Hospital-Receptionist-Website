@@ -3,9 +3,10 @@ from typing import Optional
 
 
 class ChatRequest(BaseModel):
-    message: str
+    message:    str
     session_id: str
-
+    user_lat:   Optional[float] = None
+    user_lng:   Optional[float] = None
 
 class PatientSummary(BaseModel):
     patient_name: Optional[str] = None

@@ -16,10 +16,12 @@ const client = axios.create({
  * @param {string} sessionId - UUID for this session
  * @returns {Promise<{reply, ward, data_complete, patient_summary}>}
  */
-export async function sendMessage(message, sessionId) {
+export async function sendMessage(message, sessionId, userLat = null, userLng = null) {
   const { data } = await client.post('/chat', {
     message,
     session_id: sessionId,
+    user_lat: userLat,
+    user_lng: userLng,
   })
   return data
 }

@@ -28,9 +28,9 @@ async def chat(request: ChatRequest):
 
     try:
         result = await run_chat(
-            session_id=request.session_id,
-            user_message=request.message,
-        )
+    session_id=request.session_id,
+    user_message=request.message,
+)
         return ChatResponse(**result)
 
     except Exception as e:
@@ -89,3 +89,22 @@ async def get_patients(
 @router.get("/health")
 async def health_check():
     return {"status": "ok", "service": "AI Hospital Receptionist API"}
+
+# ── POST /book-facility ───────────────────────────────────────────────────────
+
+@router.post("/book-facility")
+async def book_facility(request: dict):
+    try:
+        from services.email_service import send_appointment_email
+        send_appointment_email(
+            patient_name=request.get("name"),
+            patient_email=request.get("email"),
+            doctor=f"{request.get('facility')} Department",
+            ward="Diagnostic Center",
+            slot=request.get("slot"),
+            fee=request.get("fee", 0),
+        )
+        return {"success": True, "message": "Booking confirmed and email sent"}
+    except Exception as e:
+        print(f"[Facility Booking Error] {e}")
+        return {"success": False, "message": str(e)}
