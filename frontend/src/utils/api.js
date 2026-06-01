@@ -12,16 +12,36 @@ const client = axios.create({
 
 /**
  * Send a chat message to the AI backend.
- * @param {string} message  - User's typed message
- * @param {string} sessionId - UUID for this session
+ * @param {string} message     - User's typed message
+ * @param {string} sessionId   - UUID for this session
+ * @param {object} context     - Optional extra context (hospital info, coords)
+ * @param {string|null}  context.hospital_name
+ * @param {string|null}  context.hospital_type
+ * @param {string|null}  context.hospital_area
+ * @param {string[]|null} context.hospital_specialties
+ * @param {number|null}  context.user_lat
+ * @param {number|null}  context.user_lng
  * @returns {Promise<{reply, ward, data_complete, patient_summary}>}
  */
-export async function sendMessage(message, sessionId, userLat = null, userLng = null) {
+export async function sendMessage(message, sessionId, context = {}) {
+  const {
+    hospital_name        = null,
+    hospital_type        = null,
+    hospital_area        = null,
+    hospital_specialties = null,
+    user_lat             = null,
+    user_lng             = null,
+  } = context
+
   const { data } = await client.post('/chat', {
     message,
-    session_id: sessionId,
-    user_lat: userLat,
-    user_lng: userLng,
+    session_id:           sessionId,
+    user_lat,
+    user_lng,
+    hospital_name,
+    hospital_type,
+    hospital_area,
+    hospital_specialties,
   })
   return data
 }

@@ -8,11 +8,15 @@ import FacilitiesModal from '../components/FacilitiesModal'
 import SlotBookingCalendar from '../components/SlotBookingCalendar'
 import { sendMessage } from '../utils/api'
 
-const INITIAL_MESSAGE = {
-  id: 'init',
-  role: 'assistant',
-  text: "Hello! I'm your AI Hospital Receptionist. 🏥\n\nPlease describe your health concern and I'll help you get to the right doctor. You can speak naturally — just tell me how you're feeling.",
-  timestamp: new Date(),
+// ── Build the initial greeting based on selected hospital ─────────────────────
+function buildInitialMessage(hospital) {
+  const hospitalName = hospital?.name || 'our hospital'
+  return {
+    id: 'init',
+    role: 'assistant',
+    text: `Welcome to **${hospitalName}**! 🏥\n\nI'm your AI Hospital Receptionist. Please describe your health concern and I'll help you get to the right doctor. You can speak naturally — just tell me how you're feeling.`,
+    timestamp: new Date(),
+  }
 }
 
 const LANGUAGES = [
@@ -21,9 +25,10 @@ const LANGUAGES = [
   { code: 'mr', label: '🇮🇳 Marathi' },
 ]
 
-export default function ChatPage({ onReset }) {
+// ── ChatPage now accepts `hospital` prop from LocationPopup selection ─────────
+export default function ChatPage({ onReset, hospital }) {
   const [sessionId, setSessionId]           = useState(() => uuidv4())
-  const [messages, setMessages]             = useState([INITIAL_MESSAGE])
+  const [messages, setMessages]             = useState(() => [buildInitialMessage(hospital)])
   const [input, setInput]                   = useState('')
   const [loading, setLoading]               = useState(false)
   const [ward, setWard]                     = useState(null)
@@ -47,6 +52,16 @@ export default function ChatPage({ onReset }) {
   const inputRef  = useRef(null)
   const langRef   = useRef(null)
 
+  // Re-generate greeting if the hospital prop changes (e.g. user navigates back and picks another)
+  useEffect(() => {
+    setMessages([buildInitialMessage(hospital)])
+    setSessionId(uuidv4())
+    setWard(null)
+    setPatientData(null)
+    setShowSummary(false)
+    setInput('')
+  }, [hospital?.name])
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
@@ -69,7 +84,7 @@ export default function ChatPage({ onReset }) {
 
   function handleNewSession() {
     setSessionId(uuidv4())
-    setMessages([INITIAL_MESSAGE])
+    setMessages([buildInitialMessage(hospital)])
     setWard(null)
     setPatientData(null)
     setShowSummary(false)
@@ -98,7 +113,13 @@ export default function ChatPage({ onReset }) {
     setInput('')
     setLoading(true)
     try {
-      const data = await sendMessage(text, sessionId)
+      // Pass hospital context to the backend so the AI knows which hospital it's serving
+      const data = await sendMessage(text, sessionId, {
+        hospital_name:    hospital?.name    || null,
+        hospital_type:    hospital?.type    || null,
+        hospital_area:    hospital?.area    || null,
+        hospital_specialties: hospital?.specialties || [],
+      })
       const botMsg = { id: uuidv4(), role: 'assistant', text: data.reply, timestamp: new Date() }
       setMessages(prev => [...prev, botMsg])
       if (data.ward) setWard(data.ward)
@@ -146,10 +167,15 @@ export default function ChatPage({ onReset }) {
             </svg>
           </div>
           <div>
-            <p className="font-display font-bold text-gray-800 text-sm leading-tight">AI Receptionist</p>
+            {/* Show hospital name in header if available */}
+            <p className="font-display font-bold text-gray-800 text-sm leading-tight">
+              {hospital?.name ? hospital.name : 'AI Receptionist'}
+            </p>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400" style={{ animation: 'pulse 2s infinite' }}/>
-              <p className="text-xs font-medium" style={{ color: '#1d9e97' }}>Online · Ready to help</p>
+              <p className="text-xs font-medium" style={{ color: '#1d9e97' }}>
+                {hospital?.area ? `${hospital.area} · ` : ''}Online · Ready to help
+              </p>
             </div>
           </div>
         </div>
@@ -229,7 +255,6 @@ export default function ChatPage({ onReset }) {
         <div className="absolute inset-0 z-50 flex items-start justify-center"
           style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)', overflowY: 'auto', padding: '20px 16px' }}>
           <div className="w-full max-w-3xl relative">
-            {/* Close button */}
             <button onClick={() => setShowBookSlot(false)}
               className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-gray-600 shadow-md transition-all"
               style={{ fontSize: 16, fontWeight: 'bold' }}>

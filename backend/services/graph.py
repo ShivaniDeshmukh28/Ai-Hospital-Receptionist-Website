@@ -70,6 +70,11 @@ class PatientState(TypedDict):
     patient_email:      Optional[str]
     data_complete:      bool
     last_reply:         str
+    # Hospital context from LocationPopup
+    hospital_name:      Optional[str]
+    hospital_type:      Optional[str]
+    hospital_area:      Optional[str]
+    hospital_specialties: Optional[List[str]]
 
 
 # ── LLM ───────────────────────────────────────────────────────────────────────
@@ -157,8 +162,10 @@ Dental Ward"""),
 
 def ward_node(state: PatientState) -> dict:
     llm = get_llm()
-    ward    = state.get("assigned_ward", "General Ward")
-    history = state.get("chat_history", [])
+    ward         = state.get("assigned_ward", "General Ward")
+    history      = state.get("chat_history", [])
+    hospital_name = state.get("hospital_name") or "our hospital"
+    hospital_area = state.get("hospital_area") or ""
 
     name   = state.get("patient_name")     or "Not collected"
     age    = state.get("patient_age")      or "Not collected"
@@ -167,7 +174,13 @@ def ward_node(state: PatientState) -> dict:
     slot   = state.get("appointment_slot") or "Not chosen"
     email  = state.get("patient_email")    or "Not collected"
 
-    system = f"""You are a polite AI hospital receptionist at {ward}.
+    # Build hospital identity line for system prompt
+    hospital_line = f"You are a polite AI hospital receptionist at {hospital_name}"
+    if hospital_area:
+        hospital_line += f", {hospital_area}"
+    hospital_line += f" — specifically handling the {ward}."
+
+    system = f"""{hospital_line}
 {"Be calm but efficient - this may be urgent." if ward == "Emergency Ward" else ""}
 {"Be gentle and empathetic." if ward == "Mental Health Ward" else ""}
 
@@ -362,26 +375,47 @@ _sessions: dict = {}
 def get_session(session_id: str) -> PatientState:
     if session_id not in _sessions:
         _sessions[session_id] = {
-            "chat_history":     [],
-            "patient_name":     None,
-            "patient_age":      None,
-            "patient_query":    None,
-            "assigned_ward":    None,
-            "assigned_doctor":  None,
-            "appointment_slot": None,
-            "consultation_fee": None,
-            "patient_email":    None,
-            "data_complete":    False,
-            "last_reply":       "",
+            "chat_history":       [],
+            "patient_name":       None,
+            "patient_age":        None,
+            "patient_query":      None,
+            "assigned_ward":      None,
+            "assigned_doctor":    None,
+            "appointment_slot":   None,
+            "consultation_fee":   None,
+            "patient_email":      None,
+            "data_complete":      False,
+            "last_reply":         "",
+            "hospital_name":      None,
+            "hospital_type":      None,
+            "hospital_area":      None,
+            "hospital_specialties": None,
         }
     return _sessions[session_id]
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
-async def run_chat(session_id: str, user_message: str) -> dict:
+async def run_chat(
+    session_id: str,
+    user_message: str,
+    hospital_name: str = None,
+    hospital_type: str = None,
+    hospital_area: str = None,
+    hospital_specialties: list = None,
+) -> dict:
     graph = build_graph()
     state = get_session(session_id)
+
+    # Store hospital context into session (only on first message or if updated)
+    if hospital_name:
+        state["hospital_name"] = hospital_name
+    if hospital_type:
+        state["hospital_type"] = hospital_type
+    if hospital_area:
+        state["hospital_area"] = hospital_area
+    if hospital_specialties:
+        state["hospital_specialties"] = hospital_specialties
 
     state["chat_history"].append({"role": "user", "content": user_message})
 
