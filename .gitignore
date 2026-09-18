@@ -1,16 +1,25 @@
+# Environment files
 .env
 backend/.env
+frontend/.env
 
+# Python
 __pycache__/
+*.pyc
 backend/__pycache__/
-
 venv/
 backend/venv/
 
+# Node
 node_modules/
 frontend/node_modules/
-node_modules
-node_modules
-node_modules
-node_modules
-node_modules
+
+# Build files
+dist/
+frontend/dist/
+
+# VS Code
+.vscode/
+
+# Local backup
+ai-hospital-receptionist-backup/

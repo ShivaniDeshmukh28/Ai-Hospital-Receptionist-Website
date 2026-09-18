@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MedCare HMS — Complete Hospital Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#0A6E4F;--g2:#12906A;--g3:#E0F4ED;--g4:#f4fbf8;
+  --r:#C0392B;--rl:#FDECEA;
+  --a:#D97706;--al:#FEF3DC;
+  --b:#1D4ED8;--bl:#EEF2FF;
+  --ink:#111;--inkm:#4B5563;--inkf:#9CA3AF;
+  --card:#fff;--surf:#F9F8F5;--bdr:rgba(0,0,0,0.08);--bdr2:rgba(0,0,0,0.14);
+  --sw:64px; /* sidebar collapsed */
+  --swx:220px; /* sidebar expanded */
+  --hh:56px;
+  --rad:12px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--surf);color:var(--ink);min-height:100vh;overflow-x:hidden;}
+
+/* ─── LOGIN ─── */
+#login{
+  min-height:100vh;display:flex;
+  background:linear-gradient(135deg,#062E1F 0%,#0A4A34 50%,#062E1F 100%);
+  position:relative;overflow:hidden;
+}
+#login::before{content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.login-wrap{display:flex;width:100%;position:relative;z-index:1;}
+.login-hero{flex:1;display:flex;flex-direction:column;justify-content:center;padding:60px 80px;}
+.lh-logo{display:flex;align-items:center;gap:12px;margin-bottom:56px;}
+.lh-mark{width:40px;height:40px;background:var(--g2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:#fff;}
+.lh-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:600;color:#fff;}
+.lh-h1{font-family:'Syne',sans-serif;font-size:52px;font-weight:700;color:#fff;line-height:1.1;margin-bottom:16px;}
+.lh-h1 span{color:var(--g2);}
+.lh-p{font-size:15px;color:rgba(255,255,255,0.5);max-width:380px;line-height:1.8;margin-bottom:48px;}
+.feat-list{display:flex;flex-direction:column;gap:14px;}
+.feat-item{display:flex;align-items:center;gap:14px;}
+.feat-icon{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.feat-text{font-size:13px;color:rgba(255,255,255,0.65);line-height:1.5;}
+.login-form-wrap{width:420px;background:#fff;display:flex;align-items:center;justify-content:center;padding:60px 48px;}
+.lf{width:100%;}
+.lf-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.lf-sub{font-size:13px;color:var(--inkf);margin-bottom:32px;}
+.lf-field{margin-bottom:16px;}
+.lf-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:var(--inkm);display:block;margin-bottom:6px;}
+.lf-input{width:100%;padding:11px 14px;border:1.5px solid var(--bdr2);border-radius:9px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--surf);outline:none;transition:border .15s;}
+.lf-input:focus{border-color:var(--g);background:#fff;}
+.lf-btn{width:100%;padding:13px;background:var(--g);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:500;font-family:'Syne',sans-serif;cursor:pointer;letter-spacing:.02em;transition:background .15s;margin-top:8px;}
+.lf-btn:hover{background:var(--g2);}
+.lf-err{color:var(--r);font-size:12px;margin-top:10px;display:none;}
+.lf-demo{background:var(--g3);color:var(--g);font-size:12px;padding:10px 14px;border-radius:8px;margin-top:18px;text-align:center;line-height:1.7;}
+
+/* ─── APP SHELL ─── */
+#app{display:none;min-height:100vh;}
+.sidebar{
+  position:fixed;top:0;left:0;width:var(--swx);height:100vh;
+  background:#0D1F17;display:flex;flex-direction:column;z-index:200;
+  transition:width .25s ease;overflow:hidden;
+}
+.sb-logo{padding:0 18px;height:var(--hh);display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;}
+.sb-mark{width:30px;height:30px;background:var(--g2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#fff;flex-shrink:0;}
+.sb-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:#fff;white-space:nowrap;}
+.sb-nav{flex:1;padding:12px 10px;overflow-y:auto;overflow-x:hidden;}
+.sb-section{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.25);padding:0 8px;margin:14px 0 5px;white-space:nowrap;}
+.nb{display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:8px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.55);transition:all .15s;white-space:nowrap;user-select:none;position:relative;}
+.nb:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9);}
+.nb.active{background:rgba(255,255,255,.12);color:#fff;font-weight:500;}
+.nb-icon{width:20px;text-align:center;font-size:15px;flex-shrink:0;}
+.nb-badge{margin-left:auto;background:var(--r);color:#fff;font-size:9px;padding:1px 6px;border-radius:20px;font-weight:700;flex-shrink:0;}
+.nb-badge.green{background:var(--g2);}
+.sb-foot{padding:10px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0;}
+.sb-user{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;cursor:pointer;}
+.sb-av{width:28px;height:28px;border-radius:50%;background:var(--g2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+.sb-uname{font-size:12px;color:rgba(255,255,255,.65);white-space:nowrap;}
+.sb-urole{font-size:10px;color:rgba(255,255,255,.3);}
+.sb-logout{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.3);cursor:pointer;font-size:15px;padding:4px;flex-shrink:0;}
+.sb-logout:hover{color:rgba(255,255,255,.7);}
+.main{margin-left:var(--swx);min-height:100vh;display:flex;flex-direction:column;transition:margin-left .25s;}
+.topbar{height:var(--hh);background:var(--card);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:14px;padding:0 24px;position:sticky;top:0;z-index:100;}
+.tb-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:var(--ink);flex:1;}
+.tb-search{padding:7px 13px;border:1px solid var(--bdr2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surf);color:var(--ink);outline:none;width:200px;}
+.tb-search:focus{border-color:var(--g);}
+.tb-btn{padding:7px 16px;background:var(--g);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:500;font-family:'Syne',sans-serif;cursor:pointer;transition:background .15s;white-space:nowrap;}
+.tb-btn:hover{background:var(--g2);}
+.tb-alert{position:relative;cursor:pointer;font-size:20px;}
+.tb-alert-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--r);border-radius:50%;border:2px solid #fff;}
+.content{padding:24px;flex:1;}
+.page{display:none;animation:fadeUp .2s ease;}
+.page.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ─── COMMON COMPONENTS ─── */
+.sg{display:grid;gap:14px;}
+.sg-4{grid-template-columns:repeat(4,1fr);}
+.sg-3{grid-template-columns:repeat(3,1fr);}
+.sg-2{grid-template-columns:1fr 1fr;}
+.sg-21{grid-template-columns:1fr 340px;}
+.sg-13{grid-template-columns:340px 1fr;}
+.card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--rad);padding:18px 20px;}
+.card-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.ct-right{margin-left:auto;font-size:11px;color:var(--inkf);font-weight:400;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.ct-right:hover{color:var(--g);}
+.sec-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:4px;}
+.sec-sub{font-size:13px;color:var(--inkf);margin-bottom:20px;}
+
+/* stat card */
+.sc{background:var(--card);border:1px solid var(--bdr);border-radius:var(--rad);padding:18px 20px;}
+.sc-icon{font-size:20px;margin-bottom:10px;display:block;}
+.sc-val{font-size:26px;font-weight:600;line-height:1;margin-bottom:5px;}
+.sc-lbl{font-size:12px;color:var(--inkf);}
+.sc-chg{font-size:11px;font-weight:500;margin-top:6px;}
+.chg-up{color:var(--g);}
+.chg-dn{color:var(--r);}
+
+/* badge */
+.bdg{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;letter-spacing:.02em;}
+.bg-g{background:var(--g3);color:#085041;}
+.bg-r{background:var(--rl);color:var(--r);}
+.bg-a{background:var(--al);color:#92400E;}
+.bg-b{background:var(--bl);color:var(--b);}
+.bg-n{background:#F1F0EC;color:#444;}
+
+/* table */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--inkf);padding:0 0 10px;text-align:left;border-bottom:1px solid var(--bdr);}
+.tbl td{padding:11px 0;border-bottom:1px solid var(--bdr);font-size:13px;vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tbody tr:hover td{background:var(--surf);}
+.pname{font-weight:500;font-size:13px;}
+.psub{font-size:11px;color:var(--inkf);}
+
+/* icon btn */
+.ibtn{background:none;border:1px solid var(--bdr2);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;color:var(--inkm);font-family:'DM Sans',sans-serif;transition:all .12s;}
+.ibtn:hover{border-color:var(--g);color:var(--g);}
+.ibtn.red:hover{border-color:var(--r);color:var(--r);}
+
+/* toggle */
+.tog{width:36px;height:20px;background:var(--g2);border-radius:10px;position:relative;cursor:pointer;border:none;transition:background .2s;flex-shrink:0;}
+.tog.off{background:#D1D5DB;}
+.tok{width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;right:2px;transition:right .2s,left .2s;}
+.tog.off .tok{right:auto;left:2px;}
+.tog-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bdr);font-size:13px;}
+.tog-row:last-child{border-bottom:none;}
+
+/* modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal-box{background:var(--card);border-radius:16px;padding:28px;width:460px;max-width:95vw;max-height:90vh;overflow-y:auto;}
+.modal-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:4px;}
+.modal-sub{font-size:13px;color:var(--inkf);margin-bottom:22px;}
+.fg{margin-bottom:14px;}
+.fl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--inkm);display:block;margin-bottom:5px;}
+.fi{width:100%;padding:9px 12px;border:1.5px solid var(--bdr2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surf);color:var(--ink);outline:none;}
+.fi:focus{border-color:var(--g);background:#fff;}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.mact{display:flex;gap:10px;margin-top:20px;}
+.btn-p{flex:1;padding:11px;background:var(--g);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:500;font-family:'Syne',sans-serif;cursor:pointer;transition:background .15s;}
+.btn-p:hover{background:var(--g2);}
+.btn-gh{padding:11px 18px;background:none;color:var(--inkm);border:1px solid var(--bdr2);border-radius:9px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+.btn-gh:hover{background:var(--surf);}
+
+/* toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#111;color:#fff;padding:13px 18px;border-radius:11px;font-size:13px;z-index:9999;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none;max-width:320px;}
+.toast.show{opacity:1;transform:none;}
+.tst{font-weight:500;margin-bottom:2px;font-family:'Syne',sans-serif;}
+.tss{font-size:11px;opacity:.6;}
+
+/* alert banner */
+.alert-banner{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;margin-bottom:12px;font-size:13px;}
+.ab-r{background:var(--rl);border:1px solid rgba(192,57,43,.2);color:var(--r);}
+.ab-a{background:var(--al);border:1px solid rgba(217,119,6,.2);color:var(--a);}
+.ab-g{background:var(--g3);border:1px solid rgba(18,144,106,.2);color:var(--g);}
+.ab-icon{font-size:18px;flex-shrink:0;}
+.ab-close{margin-left:auto;cursor:pointer;opacity:.6;font-size:16px;}
+.ab-close:hover{opacity:1;}
+
+/* progress */
+.pbar{height:5px;background:var(--bdr);border-radius:3px;overflow:hidden;margin-top:5px;}
+.pfill{height:100%;border-radius:3px;}
+
+/* token display */
+.token-big{font-family:'Syne',sans-serif;font-size:64px;font-weight:700;color:var(--g);line-height:1;text-align:center;padding:20px 0;}
+.token-label{font-size:13px;color:var(--inkf);text-align:center;margin-top:4px;}
+
+/* bed grid */
+.bed-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:12px;}
+.bu{aspect-ratio:1;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;font-weight:600;cursor:pointer;border:1.5px solid transparent;transition:transform .12s;position:relative;}
+.bu:hover{transform:scale(1.08);}
+.bu .bno{font-size:10px;font-weight:700;margin-bottom:1px;}
+.bu-fr{background:#e8f8f1;border-color:#a8dfc7;color:#085041;}
+.bu-oc{background:var(--rl);border-color:#f0a9a4;color:var(--r);}
+.bu-rs{background:var(--al);border-color:#f5cb72;color:var(--a);}
+.bu-cl{background:var(--bl);border-color:#90b8e0;color:var(--b);}
+.bu-em{background:#FEF2F2;border-color:#FCA5A5;color:#991B1B;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.bu-sel{box-shadow:0 0 0 2.5px var(--ink)!important;transform:scale(1.1)!important;}
+
+/* schedule grid */
+.sch-grid{display:grid;grid-template-columns:120px repeat(7,1fr);gap:1px;background:var(--bdr);border-radius:10px;overflow:hidden;}
+.sch-cell{background:var(--card);padding:8px 6px;font-size:11px;text-align:center;}
+.sch-head{background:#F9F8F5;font-weight:600;color:var(--inkm);font-size:10px;text-transform:uppercase;letter-spacing:.05em;}
+.sch-doctor{text-align:left;font-weight:500;font-size:12px;padding-left:10px;}
+.sch-avail{background:var(--g3);color:var(--g);font-weight:500;cursor:pointer;}
+.sch-avail:hover{background:var(--g3);}
+.sch-leave{background:var(--rl);color:var(--r);}
+.sch-off{background:#F1F0EC;color:var(--inkf);}
+.sch-partial{background:var(--al);color:var(--a);}
+
+/* whatsapp preview */
+.wa-bubble{background:#DCF8C6;border-radius:12px 12px 2px 12px;padding:12px 14px;font-size:13px;line-height:1.7;color:#111;max-width:300px;position:relative;margin-bottom:10px;}
+.wa-bubble.in{background:#fff;border-radius:12px 12px 12px 2px;}
+.wa-time{font-size:10px;color:var(--inkf);text-align:right;margin-top:4px;}
+.wa-screen{background:#ECE5DD;border-radius:10px;padding:16px;margin-bottom:14px;}
+
+/* calendar mini */
+.cal-months{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--bdr);border-radius:10px;overflow:hidden;}
+.cal-mo{border-right:1px solid var(--bdr);}
+.cal-mo:last-child{border-right:none;}
+.cal-moname{font-size:12px;font-weight:600;text-align:center;padding:8px 0 4px;color:var(--ink);}
+.wdays{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;}
+.wd{font-size:9px;font-weight:600;color:var(--inkf);padding:3px 0;text-transform:uppercase;}
+.dgrid{display:grid;grid-template-columns:repeat(7,1fr);}
+.dy{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;border-radius:6px;margin:1px;transition:transform .1s;}
+.dy:hover{transform:scale(1.1);}
+.dy.d-av{background:var(--g);color:#fff;font-weight:500;}
+.dy.d-fu{background:var(--r);color:#fff;}
+.dy.d-fa{background:var(--a);color:#fff;}
+.dy.d-nr{background:var(--bl);color:var(--b);}
+.dy.d-no{background:#F1F0EC;color:var(--inkf);cursor:not-allowed;}
+.dy.d-ps{color:var(--inkf);cursor:default;}
+.dy.d-td{box-shadow:0 0 0 2px #111;}
+.dy.d-sl{box-shadow:0 0 0 3px var(--g)!important;transform:scale(1.12);}
+
+/* billing */
+.bill-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bdr);font-size:13px;}
+.bill-row:last-child{border-bottom:none;}
+.bill-total{display:flex;justify-content:space-between;align-items:center;padding:14px 0 0;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;}
+
+/* OPD queue */
+.queue-item{display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--card);border:1px solid var(--bdr);border-radius:10px;margin-bottom:8px;transition:all .15s;}
+.queue-item.active-q{border-color:var(--g);background:var(--g4);}
+.queue-item.called{opacity:.5;}
+.q-token{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--g);min-width:50px;}
+.q-info{flex:1;}
+.q-name{font-size:13px;font-weight:500;}
+.q-detail{font-size:11px;color:var(--inkf);margin-top:2px;}
+.q-wait{font-size:11px;color:var(--a);font-weight:500;}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="login">
+  <div class="login-wrap">
+    <div class="login-hero">
+      <div class="lh-logo">
+        <div class="lh-mark">M</div>
+        <div class="lh-name">MedCare HMS</div>
+      </div>
+      <h1 class="lh-h1">Complete<br/><span>Hospital</span><br/>Management</h1>
+      <p class="lh-p">One unified system for appointments, beds, billing, OPD queue, doctor schedules, and automated patient communication.</p>
+      <div class="feat-list">
+        <div class="feat-item"><div class="feat-icon">🛏️</div><div class="feat-text">Real-time bed allocation & emergency alerts</div></div>
+        <div class="feat-item"><div class="feat-icon">📋</div><div class="feat-text">Patient check-in, check-out & discharge flow</div></div>
+        <div class="feat-item"><div class="feat-icon">🔢</div><div class="feat-text">OPD token & live queue management</div></div>
+        <div class="feat-item"><div class="feat-icon">💰</div><div class="feat-text">Billing, payments & invoice generation</div></div>
+        <div class="feat-item"><div class="feat-icon">👨‍⚕️</div><div class="feat-text">Doctor schedule, leave & availability</div></div>
+        <div class="feat-item"><div class="feat-icon">💬</div><div class="feat-text">WhatsApp & SMS automation templates</div></div>
+      </div>
+    </div>
+    <div class="login-form-wrap">
+      <div class="lf">
+        <div class="lf-title">Sign in</div>
+        <p class="lf-sub">Access your hospital admin panel</p>
+        <div class="lf-field"><label class="lf-label">Username</label><input class="lf-input" id="lu" type="text" placeholder="admin"/></div>
+        <div class="lf-field"><label class="lf-label">Password</label><input class="lf-input" id="lp" type="password" placeholder="••••••••"/></div>
+        <button class="lf-btn" onclick="doLogin()">Sign in →</button>
+        <p class="lf-err" id="lerr">❌ Invalid credentials. Use admin / 1234</p>
+        <div class="lf-demo">Demo login: <strong>admin</strong> / <strong>1234</strong></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="app">
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-mark">M</div>
+      <div class="sb-name">MedCare HMS</div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-section">Main</div>
+      <div class="nb active" onclick="goPage('overview',this)"><span class="nb-icon">🏠</span>Overview</div>
+      <div class="nb" onclick="goPage('appointments',this)"><span class="nb-icon">📅</span>Appointments<span class="nb-badge green">18</span></div>
+      <div class="nb" onclick="goPage('checkin',this)"><span class="nb-icon">✅</span>Check-in / Out</div>
+      <div class="nb" onclick="goPage('beds',this)"><span class="nb-icon">🛏️</span>Beds & Wards<span class="nb-badge" id="emg-badge" style="display:none">!</span></div>
+      <div class="sb-section">OPD</div>
+      <div class="nb" onclick="goPage('queue',this)"><span class="nb-icon">🔢</span>OPD Queue<span class="nb-badge green" id="q-badge">7</span></div>
+      <div class="nb" onclick="goPage('reminders',this)"><span class="nb-icon">💬</span>WhatsApp / SMS</div>
+      <div class="sb-section">Admin</div>
+      <div class="nb" onclick="goPage('doctors',this)"><span class="nb-icon">👨‍⚕️</span>Doctors & Schedule</div>
+      <div class="nb" onclick="goPage('billing',this)"><span class="nb-icon">💰</span>Billing</div>
+      <div class="nb" onclick="goPage('analytics',this)"><span class="nb-icon">📊</span>Analytics</div>
+      <div class="nb" onclick="goPage('settings',this)"><span class="nb-icon">⚙️</span>Settings</div>
+    </nav>
+    <div class="sb-foot">
+      <div class="sb-user">
+        <div class="sb-av">AD</div>
+        <div><div class="sb-uname">Admin</div><div class="sb-urole">Super Admin</div></div>
+        <button class="sb-logout" onclick="doLogout()" title="Logout">⏻</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="tb-title" id="page-title">Overview</div>
+      <div style="font-size:12px;color:var(--inkf);" id="today-label"></div>
+      <input class="tb-search" type="text" placeholder="Search patient, doctor…"/>
+      <div class="tb-alert" onclick="goPage('beds',null)" title="Emergency alert"><span>🔔</span><div class="tb-alert-dot"></div></div>
+      <button class="tb-btn" onclick="openModal('modal-newbook')">+ New Booking</button>
+    </div>
+
+    <div class="content">
+
+<!-- ═══ OVERVIEW ═══ -->
+<div class="page active" id="page-overview">
+  <div class="sec-title">Good morning, Admin 👋</div>
+  <p class="sec-sub">Here's what's happening at MedCare today.</p>
+  <!-- Emergency alerts -->
+  <div id="emg-alerts"></div>
+  <div class="sg sg-4" style="margin-bottom:16px;">
+    <div class="sc"><span class="sc-icon">📅</span><div class="sc-val">18</div><div class="sc-lbl">Today's appointments</div><div class="sc-chg chg-up">↑ 3 vs yesterday</div></div>
+    <div class="sc"><span class="sc-icon">🛏️</span><div class="sc-val" id="ov-beds-free">—</div><div class="sc-lbl">Beds available</div><div class="sc-chg chg-up" id="ov-beds-sub">across all wards</div></div>
+    <div class="sc"><span class="sc-icon">🔢</span><div class="sc-val">7</div><div class="sc-lbl">OPD queue today</div><div class="sc-chg chg-up">Avg wait: 14 min</div></div>
+    <div class="sc"><span class="sc-icon">💰</span><div class="sc-val">₹84,200</div><div class="sc-lbl">Revenue today</div><div class="sc-chg chg-up">↑ 12% vs last Thu</div></div>
+  </div>
+  <div class="sg sg-21">
+    <div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">Today's appointments <span class="ct-right" onclick="goPage('appointments',null)">View all →</span></div>
+        <table class="tbl"><thead><tr><th>Patient</th><th>Time</th><th>Doctor</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody id="ov-apt-list"></tbody></table>
+      </div>
+      <div class="sg sg-2">
+        <div class="card">
+          <div class="card-title">Ward occupancy</div>
+          <div id="ov-ward-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">OPD queue snapshot</div>
+          <div class="token-big" id="ov-curr-token">—</div>
+          <div class="token-label">Currently serving</div>
+          <div style="margin-top:16px;" id="ov-queue-mini"></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card">
+        <div class="card-title">Reminders today</div>
+        <div class="tog-row"><span>WhatsApp reminders</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+        <div class="tog-row"><span>SMS fallback</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+        <div class="tog-row"><span>Auto discharge alerts</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+        <div class="tog-row"><span>Emergency bed notify</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+        <div style="margin-top:14px;display:flex;gap:8px;">
+          <button class="ibtn" style="flex:1;padding:8px;" onclick="sendBulk()">Send bulk reminders</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Doctor availability today</div>
+        <div id="ov-doc-avail"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APPOINTMENTS ═══ -->
+<div class="page" id="page-appointments">
+  <div class="sec-title">Appointments</div>
+  <p class="sec-sub">Manage today's bookings, send reminders and reschedule.</p>
+  <div class="sg sg-4" style="margin-bottom:16px;">
+    <div class="sc"><span class="sc-icon">✅</span><div class="sc-val">11</div><div class="sc-lbl">Confirmed</div></div>
+    <div class="sc"><span class="sc-icon">⏳</span><div class="sc-val">4</div><div class="sc-lbl">Pending</div></div>
+    <div class="sc"><span class="sc-icon">🔁</span><div class="sc-val">3</div><div class="sc-lbl">Rescheduled</div></div>
+    <div class="sc"><span class="sc-icon">❌</span><div class="sc-val">2</div><div class="sc-lbl">No-show</div></div>
+  </div>
+  <!-- calendar -->
+  <div class="card" style="margin-bottom:14px;">
+    <div class="card-title">Slot calendar <span class="ct-right">3-month view</span></div>
+    <div class="cal-months" id="cal-months"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:14px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;"><div style="width:12px;height:12px;background:var(--g);border-radius:3px;"></div>Available</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;"><div style="width:12px;height:12px;background:var(--r);border-radius:3px;"></div>Full</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;"><div style="width:12px;height:12px;background:var(--a);border-radius:3px;"></div>Filling fast</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;"><div style="width:12px;height:12px;background:var(--bl);border-radius:3px;"></div>Not released</div>
+    </div>
+    <div id="slot-time-section" style="display:none;">
+      <div style="font-size:12px;font-weight:600;color:var(--g);margin-bottom:8px;" id="slot-date-label"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;" id="slot-times"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Full appointment list
+      <span class="ct-right" style="display:flex;gap:8px;align-items:center;">
+        <select style="font-size:12px;padding:4px 8px;border:1px solid var(--bdr2);border-radius:6px;background:var(--surf);font-family:'DM Sans',sans-serif;">
+          <option>All depts</option><option>General OPD</option><option>Cardiology</option><option>Gynaecology</option>
+        </select>
+        <button class="tb-btn" style="font-size:11px;padding:5px 12px;" onclick="sendBulk()">Bulk remind</button>
+      </span>
+    </div>
+    <table class="tbl"><thead><tr><th>Patient</th><th>Time</th><th>Doctor/Dept</th><th>Status</th><th>Reminder</th><th>Response</th><th>Actions</th></tr></thead>
+    <tbody id="full-apt-list"></tbody></table>
+  </div>
+</div>
+
+<!-- ═══ CHECK-IN / CHECK-OUT ═══ -->
+<div class="page" id="page-checkin">
+  <div class="sec-title">Patient Check-in & Discharge</div>
+  <p class="sec-sub">Manage patient arrival, ward assignment, and discharge flow.</p>
+  <div class="sg sg-4" style="margin-bottom:16px;">
+    <div class="sc"><span class="sc-icon">🚶</span><div class="sc-val" id="ci-checked">6</div><div class="sc-lbl">Checked in today</div></div>
+    <div class="sc"><span class="sc-icon">🏥</span><div class="sc-val" id="ci-admitted">14</div><div class="sc-lbl">Currently admitted</div></div>
+    <div class="sc"><span class="sc-icon">🚪</span><div class="sc-val" id="ci-discharged">3</div><div class="sc-lbl">Discharged today</div></div>
+    <div class="sc"><span class="sc-icon">⏱️</span><div class="sc-val">2.4d</div><div class="sc-lbl">Avg stay length</div></div>
+  </div>
+  <div class="sg sg-21">
+    <div class="card">
+      <div class="card-title">Admitted patients
+        <span class="ct-right"><button class="ibtn" onclick="openModal('modal-checkin')">+ Check in patient</button></span>
+      </div>
+      <table class="tbl"><thead><tr><th>Patient</th><th>Ward / Bed</th><th>Doctor</th><th>Admitted</th><th>Expected out</th><th>Action</th></tr></thead>
+      <tbody id="admitted-list"></tbody></table>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card">
+        <div class="card-title">Check-in scanner</div>
+        <div style="background:var(--g4);border:2px dashed rgba(18,144,106,.3);border-radius:10px;padding:24px;text-align:center;margin-bottom:12px;">
+          <div style="font-size:32px;margin-bottom:8px;">📷</div>
+          <div style="font-size:13px;color:var(--inkm);">Scan patient QR code</div>
+          <div style="font-size:11px;color:var(--inkf);margin-top:4px;">or enter token manually</div>
+        </div>
+        <input class="fi" type="text" placeholder="Enter booking token (e.g. MC-2847)" style="margin-bottom:10px;"/>
+        <button class="btn-p" style="width:100%;" onclick="showToast('Patient found','Ravi Sharma — General OPD — 9:00 AM')">Look up patient</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Pending check-ins today</div>
+        <div id="pending-checkins"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BEDS ═══ -->
+<div class="page" id="page-beds">
+  <div class="sec-title">Beds & Wards</div>
+  <p class="sec-sub">Real-time bed status, emergency allocation, and ward management.</p>
+  <div id="emg-alerts-beds"></div>
+  <div class="sg sg-4" style="margin-bottom:16px;" id="ward-stat-strip"></div>
+  <div class="sg sg-21">
+    <div class="card">
+      <div class="card-title" id="ward-detail-title">Ward bed map
+        <span class="ct-right" style="display:flex;gap:8px;">
+          <select id="ward-select" style="font-size:12px;padding:4px 8px;border:1px solid var(--bdr2);border-radius:6px;background:var(--surf);font-family:'DM Sans',sans-serif;" onchange="onWardChange()">
+            <option value="0">General Ward</option>
+            <option value="1">ICU</option>
+            <option value="2">Gynaecology</option>
+            <option value="3">Cardiology</option>
+            <option value="4">Orthopaedics</option>
+          </select>
+          <button class="ibtn" onclick="triggerEmergency()">🚨 Emergency alloc</button>
+        </span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;" id="ward-summary-nums"></div>
+      <div class="bed-grid" id="bed-grid-main"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;">
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;"><div style="width:10px;height:10px;border-radius:3px;background:#e8f8f1;border:1.5px solid #a8dfc7;"></div>Free</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;"><div style="width:10px;height:10px;border-radius:3px;background:var(--rl);border:1.5px solid #f0a9a4;"></div>Occupied</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;"><div style="width:10px;height:10px;border-radius:3px;background:var(--al);border:1.5px solid #f5cb72;"></div>Reserved</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;"><div style="width:10px;height:10px;border-radius:3px;background:var(--bl);border:1.5px solid #90b8e0;"></div>Cleaning</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:10px;"><div style="width:10px;height:10px;border-radius:3px;background:#FEF2F2;border:1.5px solid #FCA5A5;"></div>Emergency</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card">
+        <div class="card-title">Assign bed to patient</div>
+        <div class="fg"><label class="fl">Patient name</label><input class="fi" type="text" id="bed-pt-name" placeholder="Full name"/></div>
+        <div class="fg"><label class="fl">Ward</label>
+          <select class="fi" id="bed-ward-sel" onchange="syncWardSelect()">
+            <option value="0">General Ward</option><option value="1">ICU</option><option value="2">Gynaecology</option><option value="3">Cardiology</option><option value="4">Orthopaedics</option>
+          </select>
+        </div>
+        <div style="background:var(--g4);border:1px solid rgba(18,144,106,.15);border-radius:9px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:var(--g);">
+          <strong style="display:block;margin-bottom:3px;">Selected bed</strong>
+          <span id="selected-bed-info">None — click a free bed on the map</span>
+        </div>
+        <button class="btn-p" style="width:100%;" onclick="assignBed()">Assign bed & notify</button>
+      </div>
+      <div class="card">
+        <div class="card-title">🚨 Emergency queue</div>
+        <div id="emg-queue-list"></div>
+        <button class="btn-p" style="width:100%;margin-top:12px;" onclick="addEmgPatient()">+ Add emergency patient</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ OPD QUEUE ═══ -->
+<div class="page" id="page-queue">
+  <div class="sec-title">OPD Token & Queue</div>
+  <p class="sec-sub">Issue tokens, manage live queue, and call patients to the doctor.</p>
+  <div class="sg sg-21">
+    <div>
+      <div class="sg sg-3" style="margin-bottom:14px;">
+        <div class="card" style="text-align:center;">
+          <div style="font-size:11px;color:var(--inkf);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;">Now serving</div>
+          <div class="token-big" id="q-now-serving">T-003</div>
+          <button class="ibtn" style="margin-top:8px;" onclick="callNext()">Call next →</button>
+        </div>
+        <div class="card" style="text-align:center;">
+          <div style="font-size:11px;color:var(--inkf);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;">Next token</div>
+          <div class="token-big" style="color:var(--a);" id="q-next">T-004</div>
+          <div style="font-size:11px;color:var(--inkf);">Waiting</div>
+        </div>
+        <div class="card" style="text-align:center;">
+          <div style="font-size:11px;color:var(--inkf);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;">Total waiting</div>
+          <div class="token-big" style="color:var(--inkm);" id="q-waiting-count">4</div>
+          <div style="font-size:11px;color:var(--inkf);">patients</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Live queue <span class="ct-right"><button class="ibtn" onclick="issueToken()">+ Issue token</button></span></div>
+        <div id="queue-list"></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card">
+        <div class="card-title">Issue new token</div>
+        <div class="fg"><label class="fl">Patient name</label><input class="fi" type="text" id="q-pt-name" placeholder="Full name"/></div>
+        <div class="fg"><label class="fl">Phone</label><input class="fi" type="text" id="q-pt-phone" placeholder="+91 XXXXX"/></div>
+        <div class="fg"><label class="fl">Department</label>
+          <select class="fi" id="q-dept">
+            <option>General OPD</option><option>Cardiology</option><option>Gynaecology</option><option>Orthopaedics</option>
+          </select>
+        </div>
+        <button class="btn-p" style="width:100%;" onclick="issueToken()">Issue token & send WhatsApp</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Queue stats</div>
+        <div class="bill-row"><span>Avg wait time</span><strong>14 min</strong></div>
+        <div class="bill-row"><span>Tokens issued today</span><strong>12</strong></div>
+        <div class="bill-row"><span>Completed</span><strong>8</strong></div>
+        <div class="bill-row"><span>No-show rate</span><strong style="color:var(--g);">8%</strong></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ WHATSAPP / SMS ═══ -->
+<div class="page" id="page-reminders">
+  <div class="sec-title">WhatsApp & SMS Automation</div>
+  <p class="sec-sub">Preview templates, send messages, and configure automation triggers.</p>
+  <div class="sg sg-2" style="margin-bottom:14px;">
+    <div class="card">
+      <div class="card-title">Message templates</div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--inkf);margin-bottom:8px;">📅 Appointment reminder (24hr)</div>
+        <div class="wa-screen">
+          <div class="wa-bubble">Namaste <strong>{patient_name}</strong> 🙏<br/>Reminder: Your appointment with <strong>{doctor}</strong> is tomorrow at <strong>{time}</strong>.<br/><br/>Reply <strong>1</strong> to confirm<br/>Reply <strong>2</strong> to reschedule<br/>Reply <strong>3</strong> to cancel<div class="wa-time">Delivered ✓✓</div></div>
+        </div>
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--inkf);margin-bottom:8px;">⏰ 1-hour nudge (SMS)</div>
+        <div style="background:#f5f5f5;border-radius:8px;padding:12px 14px;font-size:12px;line-height:1.7;color:#111;font-family:monospace;">MedCare: {patient_name}, appt with {doctor} in 1hr ({time}). Arrive 10 min early. Help: 1800-000-0000</div>
+      </div>
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--inkf);margin-bottom:8px;">🛏️ Bed assignment notify</div>
+      <div class="wa-screen">
+        <div class="wa-bubble">Dear <strong>{patient_name}</strong>,<br/>You have been assigned <strong>Bed {bed_no}</strong> in <strong>{ward}</strong> ward at MedCare Hospital.<br/><br/>Please proceed to the ward reception with your documents. 🏥<div class="wa-time">Delivered ✓✓</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">Discharge summary</div>
+        <div class="wa-screen">
+          <div class="wa-bubble in">Thanks for confirming 👍</div>
+          <div class="wa-bubble">You're all set for tomorrow! Please carry your previous prescription and ID proof.<br/><br/>Need directions? <u>maps.medcare.in/location</u><div class="wa-time">Delivered ✓✓</div></div>
+        </div>
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--inkf);margin-bottom:8px;margin-top:14px;">🚨 Emergency alert template</div>
+        <div class="wa-screen">
+          <div class="wa-bubble" style="background:#FDECEA;">🚨 URGENT — MedCare HMS<br/>Emergency bed required in <strong>{ward}</strong>.<br/>Patient: <strong>{patient_name}</strong><br/>Action needed immediately. Please contact duty doctor.<div class="wa-time">Delivered ✓✓</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Automation triggers</div>
+        <div class="tog-row"><span style="font-size:12px;">Send on booking confirmation</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+        <div class="tog-row"><span style="font-size:12px;">24-hr appointment reminder</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+        <div class="tog-row"><span style="font-size:12px;">1-hr SMS nudge</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+        <div class="tog-row"><span style="font-size:12px;">Bed assignment notification</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+        <div class="tog-row"><span style="font-size:12px;">OPD token issued notify</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+        <div class="tog-row"><span style="font-size:12px;">Discharge summary message</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+        <div class="tog-row"><span style="font-size:12px;">Emergency bed alert</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+        <div class="tog-row"><span style="font-size:12px;">Post-visit feedback request</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Send manual message
+      <span class="ct-right">WhatsApp API status: <span style="color:var(--g);font-weight:500;">● Connected</span></span>
+    </div>
+    <div class="fr2">
+      <div class="fg"><label class="fl">Phone number</label><input class="fi" type="text" placeholder="+91 XXXXX XXXXX"/></div>
+      <div class="fg"><label class="fl">Template</label>
+        <select class="fi"><option>Appointment reminder</option><option>Bed assignment</option><option>OPD token</option><option>Discharge summary</option><option>Emergency alert</option></select>
+      </div>
+    </div>
+    <button class="btn-p" style="width:200px;" onclick="showToast('Message sent ✓','WhatsApp message delivered successfully.')">Send now</button>
+  </div>
+</div>
+
+<!-- ═══ DOCTORS ═══ -->
+<div class="page" id="page-doctors">
+  <div class="sec-title">Doctor Schedule & Leave</div>
+  <p class="sec-sub">Manage availability, mark leaves, and view weekly timetable.</p>
+  <div class="card" style="margin-bottom:14px;">
+    <div class="card-title">Weekly schedule — May 2026
+      <span class="ct-right"><button class="ibtn" onclick="openModal('modal-leave')">+ Mark leave</button></span>
+    </div>
+    <div class="sch-grid" id="sch-grid"></div>
+  </div>
+  <div class="sg sg-3">
+    <div class="card">
+      <div class="card-title">Doctors on duty today</div>
+      <div id="duty-today"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">On leave this week</div>
+      <div id="on-leave-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Stats this month</div>
+      <div class="bill-row"><span>Total consultations</span><strong>387</strong></div>
+      <div class="bill-row"><span>Avg per doctor/day</span><strong>12.4</strong></div>
+      <div class="bill-row"><span>Leaves taken</span><strong>8 days</strong></div>
+      <div class="bill-row"><span>Emergency coverage</span><strong style="color:var(--g);">100%</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BILLING ═══ -->
+<div class="page" id="page-billing">
+  <div class="sec-title">Billing & Payments</div>
+  <p class="sec-sub">Track invoices, payments, and generate bills for patients.</p>
+  <div class="sg sg-4" style="margin-bottom:16px;">
+    <div class="sc"><span class="sc-icon">💰</span><div class="sc-val">₹84,200</div><div class="sc-lbl">Collected today</div><div class="sc-chg chg-up">↑ 12%</div></div>
+    <div class="sc"><span class="sc-icon">📄</span><div class="sc-val">23</div><div class="sc-lbl">Invoices today</div></div>
+    <div class="sc"><span class="sc-icon">⏳</span><div class="sc-val">₹18,500</div><div class="sc-lbl">Pending payments</div><div class="sc-chg chg-dn">5 invoices</div></div>
+    <div class="sc"><span class="sc-icon">📊</span><div class="sc-val">₹12.4L</div><div class="sc-lbl">This month</div><div class="sc-chg chg-up">↑ 8% vs last</div></div>
+  </div>
+  <div class="sg sg-21">
+    <div class="card">
+      <div class="card-title">Recent invoices
+        <span class="ct-right"><button class="ibtn" onclick="openModal('modal-bill')">+ New invoice</button></span>
+      </div>
+      <table class="tbl"><thead><tr><th>Patient</th><th>Invoice #</th><th>Amount</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+      <tbody id="billing-list"></tbody></table>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card">
+        <div class="card-title">Quick bill calculator</div>
+        <div class="fg"><label class="fl">Patient name</label><input class="fi" type="text" placeholder="Name"/></div>
+        <div id="bill-items">
+          <div class="bill-row"><span>Consultation fee</span><input type="number" value="500" style="width:80px;padding:4px 8px;border:1px solid var(--bdr2);border-radius:6px;font-size:12px;text-align:right;" oninput="calcTotal()"/></div>
+          <div class="bill-row"><span>Bed charges (per day)</span><input type="number" value="800" style="width:80px;padding:4px 8px;border:1px solid var(--bdr2);border-radius:6px;font-size:12px;text-align:right;" oninput="calcTotal()"/></div>
+          <div class="bill-row"><span>Medicines</span><input type="number" value="1200" style="width:80px;padding:4px 8px;border:1px solid var(--bdr2);border-radius:6px;font-size:12px;text-align:right;" oninput="calcTotal()"/></div>
+          <div class="bill-row"><span>Lab / Tests</span><input type="number" value="650" style="width:80px;padding:4px 8px;border:1px solid var(--bdr2);border-radius:6px;font-size:12px;text-align:right;" oninput="calcTotal()"/></div>
+          <div class="bill-row"><span>GST (5%)</span><span id="gst-amt">₹158</span></div>
+        </div>
+        <div class="bill-total"><span>Total</span><span id="bill-total-val" style="color:var(--g);">₹3,308</span></div>
+        <button class="btn-p" style="width:100%;margin-top:14px;" onclick="showToast('Invoice generated ✓','PDF sent to patient WhatsApp.')">Generate & send invoice</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Payment methods today</div>
+        <div class="bill-row"><span>UPI / QR</span><strong>₹42,000</strong></div>
+        <div class="bill-row"><span>Cash</span><strong>₹28,700</strong></div>
+        <div class="bill-row"><span>Insurance</span><strong>₹9,500</strong></div>
+        <div class="bill-row"><span>Card</span><strong>₹4,000</strong></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ANALYTICS ═══ -->
+<div class="page" id="page-analytics">
+  <div class="sec-title">Analytics & Reports</div>
+  <p class="sec-sub">Hospital performance metrics, trends, and insights.</p>
+  <div class="sg sg-4" style="margin-bottom:16px;">
+    <div class="sc"><span class="sc-icon">📉</span><div class="sc-val">8%</div><div class="sc-lbl">No-show rate</div><div class="sc-chg chg-up">↓ From 24% last month</div></div>
+    <div class="sc"><span class="sc-icon">⭐</span><div class="sc-val">4.7</div><div class="sc-lbl">Patient satisfaction</div><div class="sc-chg chg-up">↑ 0.4</div></div>
+    <div class="sc"><span class="sc-icon">⏱️</span><div class="sc-val">14min</div><div class="sc-lbl">Avg OPD wait</div><div class="sc-chg chg-up">↓ 6 min</div></div>
+    <div class="sc"><span class="sc-icon">🛏️</span><div class="sc-val">74%</div><div class="sc-lbl">Bed occupancy</div><div class="sc-chg chg-up">Healthy range</div></div>
+  </div>
+  <div class="sg sg-2" style="margin-bottom:14px;">
+    <div class="card">
+      <div class="card-title">Weekly appointments</div>
+      <div style="display:flex;align-items:flex-end;gap:8px;height:120px;padding-bottom:4px;" id="bar-apts"></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--inkf);margin-top:6px;"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">No-show trend (4 weeks)</div>
+      <div style="display:flex;align-items:flex-end;gap:16px;height:120px;padding-bottom:4px;">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><span style="font-size:10px;color:var(--inkf);">24%</span><div style="width:100%;background:var(--r);border-radius:5px 5px 0 0;height:96px;"></div><span style="font-size:10px;color:var(--inkf);">W1</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><span style="font-size:10px;color:var(--inkf);">18%</span><div style="width:100%;background:var(--r);border-radius:5px 5px 0 0;height:72px;opacity:.8;"></div><span style="font-size:10px;color:var(--inkf);">W2</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><span style="font-size:10px;color:var(--inkf);">12%</span><div style="width:100%;background:var(--a);border-radius:5px 5px 0 0;height:48px;"></div><span style="font-size:10px;color:var(--inkf);">W3</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><span style="font-size:10px;color:var(--inkf);font-weight:600;">8%</span><div style="width:100%;background:var(--g);border-radius:5px 5px 0 0;height:32px;"></div><span style="font-size:10px;color:var(--inkf);font-weight:600;">W4</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="sg sg-3">
+    <div class="card">
+      <div class="card-title">Top departments</div>
+      <div class="bill-row"><span>General OPD</span><strong>142 visits</strong></div>
+      <div class="bill-row"><span>Cardiology</span><strong>68 visits</strong></div>
+      <div class="bill-row"><span>Gynaecology</span><strong>54 visits</strong></div>
+      <div class="bill-row"><span>Orthopaedics</span><strong>38 visits</strong></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Bed utilization</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>General Ward</span><span style="font-weight:500;">70%</span></div><div class="pbar"><div class="pfill" style="width:70%;background:var(--g2);"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>ICU</span><span style="font-weight:500;color:var(--r);">80%</span></div><div class="pbar"><div class="pfill" style="width:80%;background:var(--a);"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>Gynaecology</span><span style="font-weight:500;">60%</span></div><div class="pbar"><div class="pfill" style="width:60%;background:var(--g2);"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>Cardiology</span><span style="font-weight:500;color:var(--r);">83%</span></div><div class="pbar"><div class="pfill" style="width:83%;background:var(--r);"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>Orthopaedics</span><span style="font-weight:500;">50%</span></div><div class="pbar"><div class="pfill" style="width:50%;background:var(--g2);"></div></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Revenue breakdown</div>
+      <div class="bill-row"><span>OPD consultations</span><strong>₹4.2L</strong></div>
+      <div class="bill-row"><span>Bed charges</span><strong>₹3.8L</strong></div>
+      <div class="bill-row"><span>Lab & diagnostics</span><strong>₹2.6L</strong></div>
+      <div class="bill-row"><span>Medicines</span><strong>₹1.8L</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SETTINGS ═══ -->
+<div class="page" id="page-settings">
+  <div class="sec-title">Settings</div>
+  <p class="sec-sub">Configure hospital info, notification channels, and system preferences.</p>
+  <div class="sg sg-2">
+    <div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">Hospital information</div>
+        <div class="fg"><label class="fl">Hospital name</label><input class="fi" type="text" value="MedCare Hospital"/></div>
+        <div class="fg"><label class="fl">Contact number</label><input class="fi" type="text" value="+91 1800-000-0000"/></div>
+        <div class="fg"><label class="fl">Address</label><input class="fi" type="text" value="Dharashiv, Maharashtra"/></div>
+        <button class="btn-p" style="width:150px;" onclick="showToast('Saved','Hospital info updated.')">Save changes</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Reminder timing</div>
+        <div class="bill-row"><span>First reminder before appt</span><input class="fi" type="text" value="24 hours" style="width:120px;"/></div>
+        <div class="bill-row"><span>Second reminder before appt</span><input class="fi" type="text" value="1 hour" style="width:120px;"/></div>
+        <div class="bill-row"><span>No-show follow-up delay</span><input class="fi" type="text" value="30 minutes" style="width:120px;"/></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title">Notification channels</div>
+        <div class="tog-row"><span>WhatsApp Business API</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+        <div class="tog-row"><span>SMS (Twilio / Gupshup)</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+        <div class="tog-row"><span>Email notifications</span><button class="tog off" onclick="togSw(this)"><div class="tok"></div></button></div>
+        <div class="tog-row"><span>In-app alerts</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+      </div>
+      <div class="card">
+        <div class="card-title">System preferences</div>
+        <div class="tog-row"><span>Self-service rescheduling</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+        <div class="tog-row"><span>Auto OPD token on check-in</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+        <div class="tog-row"><span>Emergency bed auto-alert</span><button class="tog" onclick="togSw(this)"><div class="tok"></div></button></div>
+        <div class="tog-row"><span>Auto invoice on discharge</span><button class="tog off" onclick="togSw(this)"><div class="tok"></div></button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ═══ MODALS ═══ -->
+<div class="modal-bg" id="modal-newbook">
+  <div class="modal-box">
+    <div class="modal-title">New Appointment Booking</div>
+    <div class="modal-sub">Fill details — confirmation sent via WhatsApp instantly.</div>
+    <div class="fr2">
+      <div class="fg"><label class="fl">Patient name</label><input class="fi" id="nb-name" type="text" placeholder="Full name"/></div>
+      <div class="fg"><label class="fl">Phone</label><input class="fi" id="nb-phone" type="text" placeholder="+91 XXXXX"/></div>
+    </div>
+    <div class="fr2">
+      <div class="fg"><label class="fl">Department</label><select class="fi"><option>General OPD</option><option>Cardiology</option><option>Gynaecology</option><option>Orthopaedics</option></select></div>
+      <div class="fg"><label class="fl">Doctor</label><select class="fi"><option>Dr. Mehta</option><option>Dr. Kulkarni</option><option>Dr. Joshi</option><option>Dr. Bapat</option></select></div>
+    </div>
+    <div class="fg"><label class="fl">Date</label><input class="fi" type="date"/></div>
+    <div class="fg"><label class="fl">Time slot</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;" id="nb-slots">
+        <div id="nb-slot-list"></div>
+      </div>
+    </div>
+    <div class="mact"><button class="btn-gh" onclick="closeModal('modal-newbook')">Cancel</button><button class="btn-p" onclick="bookNew()">Book & send WhatsApp</button></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-reschedule">
+  <div class="modal-box">
+    <div class="modal-title">Reschedule Appointment</div>
+    <div class="modal-sub" id="rs-sub">Patient info</div>
+    <div class="fg"><label class="fl">New date</label><input class="fi" type="date" id="rs-date"/></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;margin-bottom:14px;" id="rs-slots"></div>
+    <div style="font-size:12px;color:var(--inkf);">Patient will receive WhatsApp confirmation instantly.</div>
+    <div class="mact"><button class="btn-gh" onclick="closeModal('modal-reschedule')">Cancel</button><button class="btn-p" onclick="confirmReschedule()">Confirm & notify</button></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-checkin">
+  <div class="modal-box">
+    <div class="modal-title">Check-in Patient</div>
+    <div class="modal-sub">Admit a patient and assign ward/bed.</div>
+    <div class="fr2">
+      <div class="fg"><label class="fl">Patient name</label><input class="fi" type="text" placeholder="Full name"/></div>
+      <div class="fg"><label class="fl">Booking token</label><input class="fi" type="text" placeholder="MC-XXXX"/></div>
+    </div>
+    <div class="fr2">
+      <div class="fg"><label class="fl">Ward</label><select class="fi"><option>General Ward</option><option>ICU</option><option>Gynaecology</option><option>Cardiology</option><option>Orthopaedics</option></select></div>
+      <div class="fg"><label class="fl">Bed number</label><input class="fi" type="text" placeholder="Auto-assign"/></div>
+    </div>
+    <div class="fg"><label class="fl">Attending doctor</label><select class="fi"><option>Dr. Mehta</option><option>Dr. Kulkarni</option><option>Dr. Joshi</option><option>Dr. Bapat</option></select></div>
+    <div class="fg"><label class="fl">Expected discharge</label><input class="fi" type="date"/></div>
+    <div class="mact"><button class="btn-gh" onclick="closeModal('modal-checkin')">Cancel</button><button class="btn-p" onclick="doCheckin()">Check in & assign bed</button></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-leave">
+  <div class="modal-box">
+    <div class="modal-title">Mark Doctor Leave</div>
+    <div class="modal-sub">Block schedule and notify affected patients.</div>
+    <div class="fg"><label class="fl">Doctor</label><select class="fi"><option>Dr. Rajesh Mehta</option><option>Dr. Sneha Kulkarni</option><option>Dr. Anil Joshi</option><option>Dr. Priya Bapat</option><option>Dr. Suresh Patil</option></select></div>
+    <div class="fr2">
+      <div class="fg"><label class="fl">From date</label><input class="fi" type="date"/></div>
+      <div class="fg"><label class="fl">To date</label><input class="fi" type="date"/></div>
+    </div>
+    <div class="fg"><label class="fl">Leave type</label><select class="fi"><option>Sick leave</option><option>Personal leave</option><option>Conference</option><option>Emergency</option></select></div>
+    <div class="fg"><label class="fl">Coverage doctor</label><select class="fi"><option>Auto-assign</option><option>Dr. Rajesh Mehta</option><option>Dr. Sneha Kulkarni</option><option>Dr. Anil Joshi</option></select></div>
+    <div class="mact"><button class="btn-gh" onclick="closeModal('modal-leave')">Cancel</button><button class="btn-p" onclick="markLeave()">Mark leave & notify patients</button></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-bill">
+  <div class="modal-box">
+    <div class="modal-title">Generate Invoice</div>
+    <div class="modal-sub">Create and send invoice to patient.</div>
+    <div class="fr2">
+      <div class="fg"><label class="fl">Patient name</label><input class="fi" type="text" placeholder="Name"/></div>
+      <div class="fg"><label class="fl">Phone</label><input class="fi" type="text" placeholder="+91 XXXXX"/></div>
+    </div>
+    <div class="fg"><label class="fl">Services</label>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="checkbox" checked/> Consultation — ₹500</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="checkbox"/> Bed charges — ₹800/day</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="checkbox" checked/> Lab tests — ₹650</label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;"><input type="checkbox"/> Medicines — ₹1200</label>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">Payment method</label><select class="fi"><option>UPI</option><option>Cash</option><option>Insurance</option><option>Card</option></select></div>
+    <div class="mact"><button class="btn-gh" onclick="closeModal('modal-bill')">Cancel</button><button class="btn-p" onclick="genBill()">Generate & send PDF</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><div class="tst" id="toast-t"></div><div class="tss" id="toast-s"></div></div>
+
+<script>
+// ═══ DATA ═══
+const apts = [
+  {id:1,name:"Ravi Sharma",age:42,time:"9:00 AM",doctor:"Dr. Mehta",dept:"General OPD",status:"confirmed",reminder:"sent",response:"confirmed"},
+  {id:2,name:"Sunita Patil",age:35,time:"9:30 AM",doctor:"Dr. Kulkarni",dept:"Gynaecology",status:"confirmed",reminder:"sent",response:"no reply"},
+  {id:3,name:"Anil Deshmukh",age:58,time:"10:00 AM",doctor:"Dr. Joshi",dept:"Cardiology",status:"pending",reminder:"pending",response:"—"},
+  {id:4,name:"Priya Nair",age:29,time:"10:30 AM",doctor:"Dr. Mehta",dept:"General OPD",status:"rescheduled",reminder:"sent",response:"rescheduled"},
+  {id:5,name:"Mohammed Shaikh",age:67,time:"11:00 AM",doctor:"Dr. Bapat",dept:"Orthopaedics",status:"confirmed",reminder:"sent",response:"confirmed"},
+  {id:6,name:"Kavitha Rao",age:44,time:"11:30 AM",doctor:"Dr. Kulkarni",dept:"Gynaecology",status:"no-show",reminder:"sent",response:"no reply"},
+];
+
+function mkBeds(total, occIdx, resIdx=[], clnIdx=[], emgIdx=[]) {
+  return Array.from({length:total},(_,i)=>{
+    let s='free';
+    if(emgIdx.includes(i)) s='emergency';
+    else if(occIdx.includes(i)) s='occupied';
+    else if(resIdx.includes(i)) s='reserved';
+    else if(clnIdx.includes(i)) s='cleaning';
+    return {id:i+1,status:s,patient:s==='occupied'?['Ravi S.','Sunita P.','Anil D.','Mohammed S.','Kavitha R.'][Math.floor(Math.random()*5)]:null};
+  });
+}
+const wards = [
+  {id:'gen',name:'General Ward',total:20,beds:mkBeds(20,[2,5,8,11,14,17],[],[1,16],[])},
+  {id:'icu',name:'ICU',total:10,beds:mkBeds(10,[1,3,4,6,8],[7],[],[0])},
+  {id:'gyn',name:'Gynaecology',total:15,beds:mkBeds(15,[1,3,5,7,9,11],[],[],[])},
+  {id:'crd',name:'Cardiology',total:12,beds:mkBeds(12,[0,2,4,6,8,10],[3,9],[],[])},
+  {id:'ort',name:'Orthopaedics',total:10,beds:mkBeds(10,[1,2,5,8],[4],[],[])},
+];
+
+const docs = [
+  {name:'Dr. Rajesh Mehta',dept:'General OPD',sch:['avail','avail','avail','avail','avail','partial','off']},
+  {name:'Dr. Sneha Kulkarni',dept:'Gynaecology',sch:['avail','leave','leave','avail','avail','off','off']},
+  {name:'Dr. Anil Joshi',dept:'Cardiology',sch:['avail','avail','avail','avail','avail','avail','off']},
+  {name:'Dr. Priya Bapat',dept:'Orthopaedics',sch:['partial','avail','avail','avail','avail','off','off']},
+  {name:'Dr. Suresh Patil',dept:'Neurology',sch:['leave','leave','leave','avail','avail','off','off']},
+];
+
+const admitted = [
+  {id:1,name:'Ravi Sharma',ward:'General Ward',bed:'B3',doctor:'Dr. Mehta',admitted:'May 1',expected:'May 5',status:'stable'},
+  {id:2,name:'Sunita Patil',ward:'ICU',bed:'B2',doctor:'Dr. Joshi',admitted:'Apr 30',expected:'May 4',status:'critical'},
+  {id:3,name:'Anil Deshmukh',ward:'Cardiology',bed:'B1',doctor:'Dr. Joshi',admitted:'May 2',expected:'May 6',status:'stable'},
+  {id:4,name:'Kavitha Rao',ward:'Gynaecology',bed:'B6',doctor:'Dr. Kulkarni',admitted:'May 1',expected:'May 3',status:'stable'},
+];
+
+let queue = [
+  {token:'T-001',name:'Ravi Sharma',dept:'General OPD',wait:'2 min',called:true},
+  {token:'T-002',name:'Sunita Patil',dept:'Gynaecology',wait:'8 min',called:true},
+  {token:'T-003',name:'Anil Deshmukh',dept:'Cardiology',wait:'14 min',called:false,active:true},
+  {token:'T-004',name:'Priya Nair',dept:'General OPD',wait:'20 min',called:false},
+  {token:'T-005',name:'Mohammed Shaikh',dept:'Orthopaedics',wait:'26 min',called:false},
+  {token:'T-006',name:'Kavitha Rao',dept:'Gynaecology',wait:'32 min',called:false},
+  {token:'T-007',name:'Rajesh Iyer',dept:'Cardiology',wait:'38 min',called:false},
+];
+let tokenCounter = 8;
+
+const billing = [
+  {id:'INV-0821',name:'Ravi Sharma',amt:'₹2,800',status:'paid',date:'May 2'},
+  {id:'INV-0820',name:'Sunita Patil',amt:'₹5,600',status:'pending',date:'May 2'},
+  {id:'INV-0819',name:'Mohammed Shaikh',amt:'₹1,200',status:'paid',date:'May 1'},
+  {id:'INV-0818',name:'Priya Nair',amt:'₹3,400',status:'paid',date:'May 1'},
+  {id:'INV-0817',name:'Kavitha Rao',amt:'₹7,800',status:'pending',date:'Apr 30'},
+];
+
+const emgList = [
+  {name:'Unknown patient',condition:'Severe chest pain',time:'10:23 AM'},
+  {name:'Ramesh Kumar',condition:'Road accident trauma',time:'10:45 AM'},
+];
+
+const dayStates={};
+(()=>{
+  const may={1:'fast',2:'today_avail',3:'avail',4:'avail',5:'avail',6:'full',7:'unrel',8:'fast',9:'full',10:'avail',11:'avail',12:'fast',13:'avail',14:'unrel',15:'unrel',16:'full',17:'avail',18:'avail',19:'avail',20:'avail',21:'fast',22:'avail',23:'full',24:'avail',25:'full',26:'avail',27:'full',28:'none',29:'avail',30:'avail',31:'full'};
+  const jun={1:'avail',2:'avail',3:'avail',4:'avail',5:'avail',6:'avail',7:'full',8:'fast',9:'full',10:'avail',11:'full',12:'unrel',13:'avail',14:'fast',15:'avail',16:'avail',17:'avail',18:'avail',19:'avail',20:'full',21:'avail',22:'fast',23:'avail',24:'avail',25:'avail',26:'avail',27:'avail',28:'unrel',29:'full',30:'avail'};
+  for(let d=1;d<=31;d++) dayStates[`2026-4-${d}`]=may[d]||'avail';
+  for(let d=1;d<=30;d++) dayStates[`2026-5-${d}`]=jun[d]||'avail';
+})();
+
+let selectedDate=null,selectedSlot=null,selectedBed=null,activeWardIdx=0,rsAptId=null,rsSlot=null;
+const TIMES=['9:00 AM','10:00 AM','11:00 AM','12:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM'];
+const MONTHS=[{y:2026,m:3,n:'April 2026'},{y:2026,m:4,n:'May 2026'},{y:2026,m:5,n:'June 2026'}];
+const WD=['S','M','T','W','T','F','S'];
+const WDAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+// ═══ AUTH ═══
+function doLogin(){
+  const u=document.getElementById('lu').value.trim(),p=document.getElementById('lp').value.trim();
+  if(u==='admin'&&p==='1234'){
+    document.getElementById('login').style.display='none';
+    document.getElementById('app').style.display='block';
+    init();
+  } else { document.getElementById('lerr').style.display='block'; }
+}
+document.getElementById('lp').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+function doLogout(){document.getElementById('app').style.display='none';document.getElementById('login').style.display='flex';document.getElementById('lu').value='';document.getElementById('lp').value='';document.getElementById('lerr').style.display='none';}
+
+// ═══ NAVIGATION ═══
+function goPage(id,el){
+  document.querySelectorAll('.nb').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  else document.querySelectorAll('.nb').forEach(n=>{if(n.textContent.trim().toLowerCase().startsWith(id.substring(0,4)))n.classList.add('active');});
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const titles={overview:'Overview',appointments:'Appointments',checkin:'Check-in & Discharge',beds:'Beds & Wards',queue:'OPD Queue',reminders:'WhatsApp & SMS',doctors:'Doctor Schedule',billing:'Billing & Payments',analytics:'Analytics',settings:'Settings'};
+  document.getElementById('page-title').textContent=titles[id]||id;
+}
+
+// ═══ MODALS ═══
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
+
+// ═══ TOGGLE ═══
+function togSw(el){el.classList.toggle('off');}
+
+// ═══ TOAST ═══
+function showToast(t,s){
+  document.getElementById('toast-t').textContent=t;
+  document.getElementById('toast-s').textContent=s||'';
+  const el=document.getElementById('toast');
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3200);
+}
+
+// ═══ BADGE HELPERS ═══
+function stBadge(s){const m={confirmed:'bg-g',pending:'bg-a',rescheduled:'bg-b','no-show':'bg-r'};return`<span class="bdg ${m[s]||'bg-n'}">${s}</span>`;}
+function remBadge(r){return`<span class="bdg ${r==='sent'?'bg-g':'bg-n'}">${r}</span>`;}
+function resBadge(r){const m={confirmed:'bg-g',rescheduled:'bg-b','no reply':'bg-a','—':'bg-n'};return`<span class="bdg ${m[r]||'bg-n'}">${r}</span>`;}
+
+// ═══ OVERVIEW ═══
+function renderOverview(){
+  // emergency alerts
+  const alerts=document.getElementById('emg-alerts');
+  const hasEmg=wards.some(w=>w.beds.some(b=>b.status==='emergency'));
+  const lowBed=wards.filter(w=>w.beds.filter(b=>b.status==='free').length<=2);
+  let html='';
+  if(hasEmg) html+=`<div class="alert-banner ab-r"><span class="ab-icon">🚨</span><span><strong>Emergency alert:</strong> Emergency bed occupied in ICU & General Ward. Immediate attention required.</span><span class="ab-close" onclick="this.parentElement.remove()">×</span></div>`;
+  if(lowBed.length) html+=`<div class="alert-banner ab-a"><span class="ab-icon">⚠️</span><span><strong>Low beds:</strong> ${lowBed.map(w=>w.name).join(', ')} running critically low on available beds.</span><span class="ab-close" onclick="this.parentElement.remove()">×</span></div>`;
+  alerts.innerHTML=html;
+  document.getElementById('emg-alerts-beds').innerHTML=html;
+  if(hasEmg){document.getElementById('emg-badge').style.display='';document.querySelector('.tb-alert-dot').style.display='';}
+
+  const totalFree=wards.reduce((s,w)=>s+w.beds.filter(b=>b.status==='free').length,0);
+  document.getElementById('ov-beds-free').textContent=totalFree;
+
+  document.getElementById('ov-apt-list').innerHTML=apts.slice(0,5).map(a=>`
+    <tr><td><div class="pname">${a.name}</div><div class="psub">${a.dept}</div></td>
+    <td style="font-weight:500;">${a.time}</td>
+    <td style="font-size:12px;color:var(--inkm);">${a.doctor}</td>
+    <td>${stBadge(a.status)}</td>
+    <td><button class="ibtn" onclick="openRescheduleModal(${a.id})">Reschedule</button></td></tr>`).join('');
+
+  document.getElementById('ov-ward-list').innerHTML=wards.map(w=>{
+    const f=w.beds.filter(b=>b.status==='free').length;
+    const pct=Math.round(((w.total-f)/w.total)*100);
+    const col=f===0?'var(--r)':f<=3?'var(--a)':'var(--g2)';
+    return`<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>${w.name}</span><span style="font-weight:500;color:${col};">${f} free</span></div><div class="pbar"><div class="pfill" style="width:${pct}%;background:${col};"></div></div></div>`;
+  }).join('');
+
+  const active=queue.find(q=>q.active);
+  document.getElementById('ov-curr-token').textContent=active?active.token:'—';
+  document.getElementById('ov-queue-mini').innerHTML=queue.filter(q=>!q.called).slice(0,3).map(q=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid var(--bdr);"><span style="font-weight:600;color:var(--g);">${q.token}</span><span>${q.name}</span><span style="color:var(--inkf);">${q.wait}</span></div>`).join('');
+
+  document.getElementById('ov-doc-avail').innerHTML=docs.map(d=>{
+    const today=d.sch[3];
+    const col=today==='avail'?'bg-g':today==='leave'?'bg-r':'bg-a';
+    const lbl=today==='avail'?'Available':today==='leave'?'On leave':'Partial';
+    return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bdr);font-size:12px;"><div style="flex:1;"><div style="font-weight:500;">${d.name}</div><div style="font-size:10px;color:var(--inkf);">${d.dept}</div></div><span class="bdg ${col}">${lbl}</span></div>`;
+  }).join('');
+}
+
+// ═══ APPOINTMENTS ═══
+function renderApts(){
+  document.getElementById('full-apt-list').innerHTML=apts.map(a=>`
+    <tr><td><div class="pname">${a.name}</div><div class="psub">${a.age} yrs</div></td>
+    <td style="font-weight:500;">${a.time}</td>
+    <td><div style="font-size:12px;">${a.doctor}</div><div class="psub">${a.dept}</div></td>
+    <td>${stBadge(a.status)}</td><td>${remBadge(a.reminder)}</td><td>${resBadge(a.response)}</td>
+    <td style="display:flex;gap:5px;flex-wrap:wrap;">
+      <button class="ibtn" onclick="openRescheduleModal(${a.id})">Reschedule</button>
+      ${a.reminder!=='sent'?`<button class="ibtn" onclick="sendReminder(${a.id})">Remind</button>`:''}
+    </td></tr>`).join('');
+}
+
+// ═══ CALENDAR ═══
+function renderCalendar(){
+  document.getElementById('cal-months').innerHTML=MONTHS.map(mo=>{
+    const first=new Date(mo.y,mo.m,1).getDay();
+    const total=new Date(mo.y,mo.m+1,0).getDate();
+    let cells='';
+    for(let i=0;i<first;i++) cells+=`<div class="dy"></div>`;
+    for(let d=1;d<=total;d++){
+      const key=`${mo.y}-${mo.m}-${d}`;
+      const st=dayStates[key]||'avail';
+      let cls='dy ';
+      if(st==='past') cls+='d-ps';
+      else if(st==='avail'||st==='today_avail') cls+='d-av';
+      else if(st==='full') cls+='d-fu';
+      else if(st==='fast') cls+='d-fa';
+      else if(st==='unrel') cls+='d-nr';
+      else cls+='d-no';
+      const isTd=mo.y===2026&&mo.m===4&&d===2;
+      const isSel=selectedDate&&selectedDate.y===mo.y&&selectedDate.m===mo.m&&selectedDate.d===d;
+      if(isTd) cls+=' d-td';
+      if(isSel) cls+=' d-sl';
+      const can=!['past','none','unrel','full'].includes(st);
+      cells+=`<div class="${cls}"${can?` onclick="pickDate(${mo.y},${mo.m},${d})"`:''}>${d}</div>`;
+    }
+    return`<div class="cal-mo"><div class="cal-moname">${mo.n}</div><div class="wdays">${WD.map(d=>`<div class="wd">${d}</div>`).join('')}</div><div class="dgrid">${cells}</div></div>`;
+  }).join('');
+}
+
+function pickDate(y,m,d){
+  selectedDate={y,m,d};selectedSlot=null;
+  renderCalendar();
+  const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('slot-date-label').textContent=`Available slots for ${mn[m]} ${d}, ${y}`;
+  const taken=d%3===0?[2,5]:d%2===0?[0,4,6]:[];
+  document.getElementById('slot-times').innerHTML=TIMES.map((t,i)=>{
+    const tk=taken.includes(i);
+    return`<div style="padding:7px 14px;border:1px solid ${tk?'transparent':selectedSlot===t?'transparent':'var(--bdr2)'};border-radius:20px;font-size:12px;cursor:${tk?'not-allowed':'pointer'};background:${tk?'var(--surf)':selectedSlot===t?'var(--g)':'var(--card)'};color:${tk?'var(--inkf)':selectedSlot===t?'#fff':'var(--ink)'};${tk?'text-decoration:line-through;':''}" ${!tk?`onclick="pickSlot('${t}')"`:''}>${t}</div>`;
+  }).join('');
+  document.getElementById('slot-time-section').style.display='block';
+}
+function pickSlot(t){selectedSlot=t;if(selectedDate)pickDate(selectedDate.y,selectedDate.m,selectedDate.d);}
+
+// ═══ BEDS ═══
+function renderWardStats(){
+  document.getElementById('ward-stat-strip').innerHTML=wards.map((w,i)=>{
+    const f=w.beds.filter(b=>b.status==='free').length;
+    const e=w.beds.filter(b=>b.status==='emergency').length;
+    const pct=Math.round(((w.total-f)/w.total)*100);
+    const col=f===0||e>0?'var(--r)':f<=3?'var(--a)':'var(--g2)';
+    const lbl=f===0?'Full':e>0?'Emergency':f<=3?'Almost full':'Available';
+    const bcls=f===0||e>0?'bg-r':f<=3?'bg-a':'bg-g';
+    return`<div class="sc" style="cursor:pointer;${activeWardIdx===i?'border:2px solid var(--g);background:var(--g4);':''}" onclick="selectWard(${i})">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-size:11px;color:var(--inkf);font-weight:600;text-transform:uppercase;letter-spacing:.05em;">${w.name}</span><span class="bdg ${bcls}">${lbl}</span></div>
+      <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:6px;"><span style="font-size:26px;font-weight:600;color:${col};">${f}</span><span style="font-size:12px;color:var(--inkf);">/ ${w.total}</span></div>
+      <div class="pbar"><div class="pfill" style="width:${pct}%;background:${col};"></div></div>
+      <div style="font-size:10px;color:var(--inkf);margin-top:4px;">${e>0?`⚠️ ${e} emergency · `:''}${w.beds.filter(b=>b.status==='occupied').length} occupied</div>
+    </div>`;
+  }).join('');
+}
+
+function selectWard(i){activeWardIdx=i;selectedBed=null;document.getElementById('ward-select').value=i;document.getElementById('bed-ward-sel').value=i;renderWardStats();renderBedMap();updateBedInfo();}
+function onWardChange(){selectWard(parseInt(document.getElementById('ward-select').value));}
+function syncWardSelect(){selectWard(parseInt(document.getElementById('bed-ward-sel').value));}
+
+function renderBedMap(){
+  const w=wards[activeWardIdx];
+  const f=w.beds.filter(b=>b.status==='free').length;
+  const o=w.beds.filter(b=>b.status==='occupied').length;
+  const r=w.beds.filter(b=>b.status==='reserved').length;
+  const c=w.beds.filter(b=>b.status==='cleaning').length;
+  const e=w.beds.filter(b=>b.status==='emergency').length;
+  document.getElementById('ward-summary-nums').innerHTML=
+    `<div class="sc" style="padding:10px 12px;"><div class="sc-val" style="font-size:20px;color:var(--g2);">${f}</div><div class="sc-lbl">Free</div></div>
+     <div class="sc" style="padding:10px 12px;"><div class="sc-val" style="font-size:20px;color:var(--r);">${o}</div><div class="sc-lbl">Occupied</div></div>
+     <div class="sc" style="padding:10px 12px;"><div class="sc-val" style="font-size:20px;color:var(--a);">${r}</div><div class="sc-lbl">Reserved</div></div>
+     <div class="sc" style="padding:10px 12px;"><div class="sc-val" style="font-size:20px;color:var(--b);">${e>0?e:c}</div><div class="sc-lbl">${e>0?'Emergency':'Cleaning'}</div></div>`;
+  const clsMap={free:'bu-fr',occupied:'bu-oc',reserved:'bu-rs',cleaning:'bu-cl',emergency:'bu-em'};
+  const icoMap={free:'🛏️',occupied:'🔴',reserved:'🟡',cleaning:'🔵',emergency:'🚨'};
+  document.getElementById('bed-grid-main').innerHTML=w.beds.map(b=>`
+    <div class="bu ${clsMap[b.status]}${selectedBed===b.id&&b.status==='free'?' bu-sel':''}"
+      onclick="pickBed(${b.id},'${b.status}')" title="Bed ${b.id}: ${b.status}${b.patient?' — '+b.patient:''}">
+      <div style="font-size:14px;">${icoMap[b.status]}</div>
+      <div class="bno">B${b.id}</div>
+    </div>`).join('');
+}
+
+function pickBed(id,status){
+  if(status!=='free'){showToast('Bed unavailable',`B${id} is ${status}.`);return;}
+  selectedBed=selectedBed===id?null:id;
+  renderBedMap();updateBedInfo();
+}
+function updateBedInfo(){document.getElementById('selected-bed-info').textContent=selectedBed?`Bed B${selectedBed} — ${wards[activeWardIdx].name}`:'None — click a free bed on the map';}
+function assignBed(){
+  const n=document.getElementById('bed-pt-name').value.trim();
+  if(!n){showToast('Missing','Enter patient name.');return;}
+  if(!selectedBed){showToast('No bed selected','Click a free bed on the map.');return;}
+  const b=wards[activeWardIdx].beds.find(x=>x.id===selectedBed);
+  if(b){b.status='reserved';b.patient=n;}
+  selectedBed=null;
+  renderWardStats();renderBedMap();updateBedInfo();renderOverview();
+  showToast('Bed assigned ✓',`B${b.id} assigned to ${n}. WhatsApp sent.`);
+}
+
+function triggerEmergency(){
+  const w=wards[activeWardIdx];
+  const free=w.beds.find(b=>b.status==='free');
+  if(!free){showToast('⚠️ No free beds',`${w.name} is full! Contact other wards.`);return;}
+  free.status='emergency';
+  renderWardStats();renderBedMap();renderOverview();
+  document.getElementById('emg-badge').style.display='';
+  showToast('🚨 Emergency allocation',`Bed B${free.id} in ${w.name} flagged as emergency.`);
+}
+
+function renderEmgQueue(){
+  document.getElementById('emg-queue-list').innerHTML=emgList.map(e=>`
+    <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--bdr);">
+      <div style="width:36px;height:36px;background:var(--rl);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🚨</div>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:500;">${e.name}</div><div class="psub">${e.condition}</div><div class="psub">${e.time}</div></div>
+      <button class="ibtn" onclick="showToast('Bed allocated','Emergency patient assigned to next free bed.')">Allocate</button>
+    </div>`).join('');
+}
+function addEmgPatient(){
+  emgList.push({name:'New patient',condition:'Critical — requires immediate attention',time:'Now'});
+  renderEmgQueue();
+  showToast('🚨 Emergency patient added','Duty doctor and nursing staff alerted via WhatsApp.');
+}
+
+// ═══ CHECK-IN ═══
+function renderAdmitted(){
+  document.getElementById('admitted-list').innerHTML=admitted.map(a=>`
+    <tr><td><div class="pname">${a.name}</div><div class="psub">MR-00${a.id+300}</div></td>
+    <td><div style="font-size:12px;font-weight:500;">${a.ward}</div><div class="psub">Bed ${a.bed}</div></td>
+    <td style="font-size:12px;">${a.doctor}</td>
+    <td style="font-size:12px;">${a.admitted}</td>
+    <td style="font-size:12px;">${a.expected}</td>
+    <td style="display:flex;gap:5px;"><button class="ibtn" onclick="showToast('Discharged','${a.name} discharged. Invoice sent.')">Discharge</button><button class="ibtn" onclick="showToast('Report sent','Discharge summary sent to patient WhatsApp.')">Summary</button></td></tr>`).join('');
+
+  document.getElementById('pending-checkins').innerHTML=apts.filter(a=>a.status==='confirmed').slice(0,3).map(a=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bdr);">
+      <div style="flex:1;"><div class="pname">${a.name}</div><div class="psub">${a.time} · ${a.doctor}</div></div>
+      <button class="ibtn" onclick="showToast('Checked in','${a.name} checked in. Token issued.')">Check in</button>
+    </div>`).join('');
+}
+function doCheckin(){closeModal('modal-checkin');showToast('Patient checked in ✓','Bed assigned & WhatsApp confirmation sent.');}
+
+// ═══ QUEUE ═══
+function renderQueue(){
+  let nowToken='—',nextToken='—',waitCount=0;
+  document.getElementById('queue-list').innerHTML=queue.map(q=>{
+    if(q.active) nowToken=q.token;
+    if(!q.called&&!q.active&&nextToken==='—') nextToken=q.token;
+    if(!q.called&&!q.active) waitCount++;
+    return`<div class="queue-item${q.active?' active-q':''}${q.called?' called':''}">
+      <div class="q-token">${q.token}</div>
+      <div class="q-info"><div class="q-name">${q.name}</div><div class="q-detail">${q.dept}</div></div>
+      <div class="q-wait">${q.called?'Done':q.active?'Now':'~'+q.wait}</div>
+      ${!q.called&&!q.active?`<button class="ibtn" onclick="callThisToken('${q.token}')">Call →</button>`:''}
+    </div>`;
+  }).join('');
+  document.getElementById('q-now-serving').textContent=nowToken;
+  document.getElementById('q-next').textContent=nextToken;
+  document.getElementById('q-waiting-count').textContent=waitCount;
+  document.getElementById('q-badge').textContent=waitCount;
+}
+
+function callNext(){
+  const curr=queue.findIndex(q=>q.active);
+  if(curr>=0) queue[curr].active=false,queue[curr].called=true;
+  const nxt=queue.findIndex(q=>!q.called&&!q.active);
+  if(nxt>=0){queue[nxt].active=true;showToast('Calling '+queue[nxt].token,queue[nxt].name+' — please proceed to the doctor.');}
+  renderQueue();renderOverview();
+}
+
+function callThisToken(tok){
+  queue.forEach(q=>q.active=false);
+  const q=queue.find(x=>x.token===tok);
+  if(q){q.active=true;showToast('Calling '+tok,q.name+' — please proceed.');}
+  renderQueue();
+}
+
+function issueToken(){
+  const n=document.getElementById('q-pt-name').value.trim()||'Walk-in patient';
+  const dept=document.getElementById('q-dept').value;
+  const tok=`T-00${tokenCounter++}`;
+  queue.push({token:tok,name:n,dept,wait:`${(queue.filter(q=>!q.called).length)*6} min`,called:false});
+  renderQueue();renderOverview();
+  showToast('Token issued: '+tok,n+' added to queue. WhatsApp sent.');
+  document.getElementById('q-pt-name').value='';
+  document.getElementById('q-pt-phone').value='';
+}
+
+// ═══ DOCTORS ═══
+function renderSchedule(){
+  const head=`<div class="sch-cell sch-head sch-doctor">Doctor</div>${WDAYS.map(d=>`<div class="sch-cell sch-head">${d}</div>`).join('')}`;
+  const rows=docs.map(d=>`<div class="sch-cell sch-doctor" style="text-align:left;padding-left:10px;"><div style="font-size:12px;font-weight:500;">${d.name}</div><div style="font-size:10px;color:var(--inkf);">${d.dept}</div></div>${d.sch.map(s=>{
+    const cls=s==='avail'?'sch-avail':s==='leave'?'sch-leave':s==='partial'?'sch-partial':'sch-off';
+    const lbl=s==='avail'?'✓':s==='leave'?'Leave':s==='partial'?'AM only':'Off';
+    return`<div class="sch-cell ${cls}" title="${d.name} — ${lbl}">${lbl}</div>`;
+  }).join('')}`).join('');
+  document.getElementById('sch-grid').innerHTML=head+rows;
+
+  document.getElementById('duty-today').innerHTML=docs.filter(d=>d.sch[3]==='avail'||d.sch[3]==='partial').map(d=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bdr);">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--g);flex-shrink:0;">${d.name.split(' ').slice(-1)[0][0]}</div>
+      <div style="flex:1;"><div class="pname" style="font-size:12px;">${d.name}</div><div class="psub">${d.dept}</div></div>
+      <span class="bdg ${d.sch[3]==='partial'?'bg-a':'bg-g'}">${d.sch[3]==='partial'?'AM only':'On duty'}</span>
+    </div>`).join('');
+
+  document.getElementById('on-leave-list').innerHTML=docs.filter(d=>d.sch[3]==='leave').map(d=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bdr);">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--rl);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--r);flex-shrink:0;">${d.name.split(' ').slice(-1)[0][0]}</div>
+      <div style="flex:1;"><div class="pname" style="font-size:12px;">${d.name}</div><div class="psub">${d.dept}</div></div>
+      <span class="bdg bg-r">On leave</span>
+    </div>`).join('');
+}
+
+// ═══ BILLING ═══
+function renderBilling(){
+  document.getElementById('billing-list').innerHTML=billing.map(b=>`
+    <tr><td><div class="pname">${b.name}</div></td>
+    <td style="font-size:12px;color:var(--inkf);">${b.id}</td>
+    <td style="font-weight:500;">${b.amt}</td>
+    <td><span class="bdg ${b.status==='paid'?'bg-g':'bg-a'}">${b.status}</span></td>
+    <td style="font-size:12px;color:var(--inkf);">${b.date}</td>
+    <td style="display:flex;gap:5px;"><button class="ibtn" onclick="showToast('Invoice sent','PDF sent to patient WhatsApp.')">Send</button><button class="ibtn" onclick="showToast('Printed','Invoice printed.')">Print</button></td></tr>`).join('');
+}
+
+function calcTotal(){
+  const inputs=[...document.querySelectorAll('#bill-items input[type=number]')];
+  const sum=inputs.reduce((s,i)=>s+parseFloat(i.value||0),0);
+  const gst=sum*0.05;
+  document.getElementById('gst-amt').textContent='₹'+Math.round(gst).toLocaleString('en-IN');
+  document.getElementById('bill-total-val').textContent='₹'+(sum+gst).toLocaleString('en-IN',{maximumFractionDigits:0});
+}
+
+// ═══ ANALYTICS CHART ═══
+function renderBarChart(){
+  const data=[12,18,15,22,19,8,5];
+  const max=Math.max(...data);
+  document.getElementById('bar-apts').innerHTML=data.map(v=>`
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <span style="font-size:10px;color:var(--inkf);">${v}</span>
+      <div style="width:100%;background:var(--g3);border-radius:5px 5px 0 0;height:${Math.round((v/max)*100)}px;transition:all .3s;"></div>
+    </div>`).join('');
+}
+
+// ═══ NEW BOOKING / RESCHEDULE ═══
+function bookNew(){
+  const n=document.getElementById('nb-name').value.trim();
+  const p=document.getElementById('nb-phone').value.trim();
+  if(!n||!p){showToast('Missing info','Fill name and phone.');return;}
+  apts.push({id:apts.length+1,name:n,age:'—',time:'9:00 AM',doctor:'Dr. Mehta',dept:'General OPD',status:'confirmed',reminder:'sent',response:'—'});
+  closeModal('modal-newbook');renderApts();renderOverview();
+  showToast('Booking confirmed ✓',`${n} booked. WhatsApp sent to ${p}.`);
+}
+
+function openRescheduleModal(id){
+  rsAptId=id;rsSlot=null;
+  const a=apts.find(x=>x.id===id);
+  document.getElementById('rs-sub').textContent=`${a.name} · ${a.doctor} · ${a.dept}`;
+  const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
+  document.getElementById('rs-date').value=tomorrow.toISOString().split('T')[0];
+  document.getElementById('rs-slots').innerHTML=TIMES.map(t=>`
+    <div style="padding:7px 14px;border:1px solid var(--bdr2);border-radius:20px;font-size:12px;cursor:pointer;" onclick="pickRsSlot(this,'${t}')">${t}</div>`).join('');
+  openModal('modal-reschedule');
+}
+function pickRsSlot(el,t){rsSlot=t;document.querySelectorAll('#rs-slots div').forEach(d=>d.style.background='');el.style.background='var(--g)';el.style.color='#fff';el.style.border='1px solid var(--g)';}
+function confirmReschedule(){
+  if(!rsSlot){showToast('Select a slot','Pick a time slot first.');return;}
+  const a=apts.find(x=>x.id===rsAptId);
+  a.time=rsSlot;a.status='rescheduled';a.reminder='sent';a.response='rescheduled';
+  closeModal('modal-reschedule');renderApts();renderOverview();
+  showToast('Rescheduled ✓',`${a.name} moved to ${rsSlot}. WhatsApp sent.`);
+}
+
+function sendReminder(id){const a=apts.find(x=>x.id===id);a.reminder='sent';renderApts();showToast('Reminder sent ✓',`WhatsApp sent to ${a.name}.`);}
+function sendBulk(){let c=0;apts.forEach(a=>{if(a.reminder!=='sent'){a.reminder='sent';c++;}});renderApts();renderOverview();showToast('Bulk reminders sent ✓',`${c} patients notified via WhatsApp.`);}
+function markLeave(){closeModal('modal-leave');showToast('Leave marked ✓','Doctor schedule updated. Affected patients notified.');}
+function genBill(){closeModal('modal-bill');showToast('Invoice sent ✓','PDF invoice delivered to patient WhatsApp.');}
+
+// ═══ INIT ═══
+function init(){
+  const d=new Date();
+  document.getElementById('today-label').textContent=d.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  renderOverview();renderApts();renderCalendar();
+  renderWardStats();renderBedMap();renderEmgQueue();updateBedInfo();
+  renderAdmitted();renderQueue();renderSchedule();renderBilling();renderBarChart();
+  calcTotal();
+  // NB slot list for new booking modal
+  document.getElementById('nb-slot-list').innerHTML=TIMES.map(t=>`<div style="padding:7px 14px;border:1px solid var(--bdr2);border-radius:20px;font-size:12px;cursor:pointer;display:inline-block;margin:0 4px 4px 0;" onclick="this.style.background='var(--g)';this.style.color='#fff'">${t}</div>`).join('');
+}
+</script>
+</body>
+</html>
