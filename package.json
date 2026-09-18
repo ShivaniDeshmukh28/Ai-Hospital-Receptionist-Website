@@ -1,5 +1,5 @@
 {
   "dependencies": {
-    "jspdf": "^4.2.1"
+    "@supabase/supabase-js": "^2.106.2"
   }
 }
